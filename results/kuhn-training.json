@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "algorithm": "external_sampling_mccfr",
+  "game": "kuhn",
+  "engine": "open_spiel==2.0.2",
+  "specification": {},
+  "iterations": 10000,
+  "seed": 42,
+  "seconds": 1.8728534190013306,
+  "exact_exploitability": 0.007642425383853041,
+  "information_sets": 12
+}

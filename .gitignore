@@ -2,3 +2,6 @@
 __pycache__/
 .pytest_cache/
 core*
+
+*.egg-info/
+build/
