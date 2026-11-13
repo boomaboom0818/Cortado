@@ -1,0 +1,110 @@
+{
+  "profile": {
+    "schema": 1,
+    "target": "bot",
+    "status": "active",
+    "objective": "maximize_long_run_expected_winnings",
+    "training_population": "self_play",
+    "opponent_identity": "versioned_bot_and_checkpoint",
+    "adaptation": "disabled_until_calibrated",
+    "evaluation": "held_out_bots_and_historical_checkpoints"
+  },
+  "opponents": {
+    "call": {
+      "game": "holdem",
+      "seed": 100000,
+      "hands": 1000,
+      "independent_pairs": 500,
+      "units": "bb/100",
+      "mean": -84.2,
+      "ci95": [
+        -332.62074438562854,
+        164.22074438562856
+      ],
+      "latency_ms_p50": 0.000743995769880712,
+      "latency_ms_p95": 0.13445690419757736,
+      "wall_seconds": 0.5683169940020889,
+      "decisions": [
+        2173,
+        2769
+      ],
+      "checkpoint_misses": [
+        1177,
+        0
+      ],
+      "cost": "Local CPU; monetary cost not metered"
+    },
+    "aggressive": {
+      "game": "holdem",
+      "seed": 200000,
+      "hands": 1000,
+      "independent_pairs": 500,
+      "units": "bb/100",
+      "mean": 123.15,
+      "ci95": [
+        -175.4838398727825,
+        421.78383987278255
+      ],
+      "latency_ms_p50": 0.08234699635067955,
+      "latency_ms_p95": 0.0918180012376979,
+      "wall_seconds": 0.354766448996088,
+      "decisions": [
+        1244,
+        897
+      ],
+      "checkpoint_misses": [
+        7,
+        0
+      ],
+      "cost": "Local CPU; monetary cost not metered"
+    },
+    "uniform": {
+      "game": "holdem",
+      "seed": 300000,
+      "hands": 1000,
+      "independent_pairs": 500,
+      "units": "bb/100",
+      "mean": -358.3,
+      "ci95": [
+        -655.0324701575641,
+        -61.56752984243593
+      ],
+      "latency_ms_p50": 0.0378379991161637,
+      "latency_ms_p95": 0.11066790102631784,
+      "wall_seconds": 0.40095134200237226,
+      "decisions": [
+        1392,
+        1423
+      ],
+      "checkpoint_misses": [
+        338,
+        0
+      ],
+      "cost": "Local CPU; monetary cost not metered"
+    },
+    "checkpoint": {
+      "game": "holdem",
+      "seed": 400000,
+      "hands": 1000,
+      "independent_pairs": 500,
+      "units": "bb/100",
+      "mean": -206.25,
+      "ci95": [
+        -499.78162580985577,
+        87.28162580985577
+      ],
+      "latency_ms_p50": 0.07986150012584403,
+      "latency_ms_p95": 0.11410489896661603,
+      "wall_seconds": 0.4171354110003449,
+      "decisions": [
+        1390,
+        1378
+      ],
+      "checkpoint_misses": [
+        298,
+        275
+      ],
+      "cost": "Local CPU; monetary cost not metered"
+    }
+  }
+}

@@ -67,7 +67,7 @@ The current suite has 13 passing tests, adding full-action raise bounds, short-a
 
 The committed 10,000-iteration run took 33.75 seconds of training-loop wall time and produced 320,170 information sets. Its compressed checkpoint and the four-opponent, 16,000-hand benchmark report are committed. Serialization, loading, and validation costs are not included in training-loop or decision latency measurements. Benchmark intervals are individual 95% intervals, not simultaneous multiple-comparison guarantees. These controls are weak, and substantial fallback usage persists; competitive strength remains unproven.
 
-A tested suit-relabeling primitive is available in `abstraction.py`, but is deliberately not integrated into the solver: canonical keys must be used consistently in both training and deployment, with a new checkpoint identity and convergence tests. Equity buckets, calibrated action likelihoods, adaptive betting and decision-time search are still pending. The next engineering milestone is an abstract-game adapter with validated information-set/action consistency, followed by learning curves across multiple seeds. The future human profile will reuse the foundation without reducing difficulty.
+The versioned suit-relabeling adapter in `abstraction.py` is now integrated into both training and inference; see the sustained-training instructions below. Equity buckets, calibrated action likelihoods, adaptive betting and decision-time search are still pending. The next research milestone is stronger card abstraction and learning curves across multiple seeds. The future human profile will reuse the foundation without reducing difficulty.
 
 
 ## Bot-first development targets
@@ -79,4 +79,41 @@ There is one codebase and a shared poker/CFR foundation. The profiles identify o
 
 New training checkpoints and CLI evaluation reports record a `profile` identifier. Existing checkpoints predate this metadata and are treated as bot-foundation artifacts for resumption. Opponent data for the future human target must use a separate namespace and must not contaminate frozen bot evaluation sets. No opponent-history persistence is implemented yet.
 
-Bot-first milestones: integrate and validate the abstraction adapter; train multiple reproducible seeds; improve coverage and benchmark against stronger independent bots; only then enable calibrated exploitation. Human-specific adaptation comes after these gates. Both profiles maximize long-run expected winnings, and neither uses an LLM as a betting engine.
+Bot-first milestones: train multiple reproducible seeds using the validated adapter; improve coverage and benchmark against stronger independent bots; only then enable calibrated exploitation. Human-specific adaptation comes after these gates. Both profiles maximize long-run expected winnings, and neither uses an LLM as a betting engine.
+
+
+## Sustained training readiness
+
+The pipeline is ready for **bounded, restartable bot training experiments**. It is not a claim that a complete competitive Hold'em training run fits this host. The FCPA action restriction remains; full-action evaluation support does not imply full-action training support.
+
+```sh
+# Install and run correctness gates first.
+uv venv --python 3.12
+uv pip install -r requirements.lock
+.venv/bin/pytest -q
+
+# One bounded training invocation; writes under ignored runs/.
+.venv/bin/python -m doppio.run --config configs/train-bot.json --run-dir runs/bot-seed42
+# Continue from exactly the last completed saved iteration.
+.venv/bin/python -m doppio.run --config configs/train-bot.json --run-dir runs/bot-seed42 --resume
+
+# Evaluate separately from training; never tune on the frozen final test suite.
+.venv/bin/python -m doppio.benchmark runs/bot-seed42/latest.json.gz --historical results/holdem-10k.json.gz --pairs 10000
+```
+
+`configs/train-bot.json` specifies 100,000 **additional** iterations per invocation, a one-hour wall budget, a 4 GiB peak-RSS soft threshold and a checkpoint every 1,000 iterations. Whichever stopping condition occurs first ends the invocation. Resume uses the immutable run configuration and the checkpoint RNG, not a new seed. Copy the config and use independent run directories for seeds 43 and 44; results from independent runs are not merged into one CFR table. Start sequentially until measured RAM requirements justify concurrency.
+
+Each run directory contains its immutable config, `latest.json.gz`, append-only metrics, summary, and an iteration-numbered historical checkpoint after each invocation. An advisory lock prevents simultaneous trainers in that directory. Writes use compression, fsync and atomic replacement. SIGINT/SIGTERM finish the current iteration before saving; SIGKILL, crashes and power loss can lose work since the last checkpoint. A completed save remains resumable. Direct `doppio.cli train` is a lower-level interface without the run-directory lock; prefer `doppio.run` for long runs.
+
+Budgets are **soft iteration-boundary checks**, not hard allocation limits. Peak RSS is the process lifetime high-water mark on Linux. Serialization copies the table and needs extra RAM; reserve at least comparable free memory above the table footprint. Wall budgets can be exceeded by an iteration or checkpoint save. The 1 GiB disk preflight is only a minimum, not a forecast; monitor disk use and historical snapshot growth. Logs record peak RSS, wall time, checkpoint size, iteration count, representation and runtime versions. Checkpoint serialization time is included in subsequent cumulative wall measurements but not the snapshot that is being saved. Exact schema-3 resume requires matching Python/NumPy versions; pinned engine compatibility is also checked.
+
+New schema-3 checkpoints explicitly distinguish `exact-v1` from `suits-v1`; legacy checkpoints remain exact. `suits-v1` chooses a canonical suit labeling, retaining ranks, card order, public history and betting information; ordered legal action IDs are part of the key. This is a lossless symmetry reduction, not equity bucketing, and gives at most a 24-fold reduction. It does not forget public streets or invent access to hidden cards. Changing representation requires a fresh run. Deployment automatically uses the checkpoint's representation. Tests verify split-run equality, inference lookup, information isolation, save failure recovery, signal handling and resource stops.
+
+The readiness pilot uses seed 123, 1,000 suit-abstracted iterations and four held-out opponent evaluations. Reports are in `results/readiness-*.json`; the local pilot checkpoint is in ignored `runs/readiness/`. Reproduce with:
+
+```sh
+.venv/bin/python -m doppio.cli train --game holdem --iterations 1000 --seed 123 --representation suits-v1 --checkpoint runs/readiness/latest.json.gz --checkpoint-every 250 --max-seconds 60 --max-rss-mb 1024 --metrics runs/readiness/metrics.jsonl
+.venv/bin/python -m doppio.benchmark runs/readiness/latest.json.gz --historical results/holdem-10k.json.gz --pairs 500
+```
+
+Before committing large compute: measure coverage, RAM growth and iterations/second at several run lengths and seeds; evaluate against stronger independent agents; select and validate a strategic/equity abstraction or neural CFR implementation if table growth is unacceptable. Those research choices remain necessary for competitive-scale training. No honest total training-hours estimate follows from this pilot, and no full Hold'em exploitability claim is made. Opponent adaptation remains disabled pending calibration.

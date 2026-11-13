@@ -1,5 +1,6 @@
 """Policies receive immutable information sets, never engine states."""
 from .checkpoints import load
+from .abstraction import information_key
 import numpy as np
 
 class Policy:
@@ -8,7 +9,7 @@ class Policy:
             raise ValueError(kind)
         self.kind = kind
         self.data = load(checkpoint) if checkpoint else None
-        if kind == 'checkpoint' and (not self.data or self.data['schema'] not in (1, 2)):
+        if kind == 'checkpoint' and (not self.data or self.data['schema'] not in (1, 2, 3)):
             raise ValueError('Versioned checkpoint required')
         self.misses = 0
         self.decisions = 0
@@ -27,7 +28,7 @@ class Policy:
             return actions[-1]
         weights = np.ones(len(actions))
         if self.data:
-            row = self.data['table'].get(observation.information)
+            row = self.data['table'].get(information_key(observation.information, actions, self.data.get('representation', 'exact-v1')))
             if row is None:
                 self.misses += 1
             else:
