@@ -1,0 +1,98 @@
+{
+  "call": {
+    "game": "holdem",
+    "seed": 100000,
+    "hands": 4000,
+    "independent_pairs": 2000,
+    "units": "bb/100",
+    "mean": -2.5875,
+    "ci95": [
+      -129.17913316697286,
+      124.00413316697285
+    ],
+    "latency_ms_p50": 0.0007230046321637928,
+    "latency_ms_p95": 0.029532896587625146,
+    "wall_seconds": 1.5795464589973562,
+    "decisions": [
+      8716,
+      11067
+    ],
+    "checkpoint_misses": [
+      4716,
+      0
+    ],
+    "cost": "Local CPU; monetary cost not metered"
+  },
+  "aggressive": {
+    "game": "holdem",
+    "seed": 200000,
+    "hands": 4000,
+    "independent_pairs": 2000,
+    "units": "bb/100",
+    "mean": 145.725,
+    "ci95": [
+      -2.9798799673049814,
+      294.42987996730494
+    ],
+    "latency_ms_p50": 0.02628000220283866,
+    "latency_ms_p95": 0.029711500246776268,
+    "wall_seconds": 1.1687795510006254,
+    "decisions": [
+      4959,
+      3572
+    ],
+    "checkpoint_misses": [
+      4,
+      0
+    ],
+    "cost": "Local CPU; monetary cost not metered"
+  },
+  "uniform": {
+    "game": "holdem",
+    "seed": 300000,
+    "hands": 4000,
+    "independent_pairs": 2000,
+    "units": "bb/100",
+    "mean": 156.95,
+    "ci95": [
+      8.822234204412638,
+      305.0777657955873
+    ],
+    "latency_ms_p50": 0.02389599831076339,
+    "latency_ms_p95": 0.029057398205623034,
+    "wall_seconds": 1.2086480329962797,
+    "decisions": [
+      5360,
+      5489
+    ],
+    "checkpoint_misses": [
+      1148,
+      0
+    ],
+    "cost": "Local CPU; monetary cost not metered"
+  },
+  "checkpoint": {
+    "game": "holdem",
+    "seed": 400000,
+    "hands": 4000,
+    "independent_pairs": 2000,
+    "units": "bb/100",
+    "mean": 153.8125,
+    "ci95": [
+      8.371336780444807,
+      299.25366321955516
+    ],
+    "latency_ms_p50": 0.02421200042590499,
+    "latency_ms_p95": 0.02918000245699659,
+    "wall_seconds": 1.2207833409993327,
+    "decisions": [
+      5422,
+      5519
+    ],
+    "checkpoint_misses": [
+      1226,
+      5471
+    ],
+    "cost": "Local CPU; monetary cost not metered"
+  }
+}

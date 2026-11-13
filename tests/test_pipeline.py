@@ -47,3 +47,66 @@ def test_reproducibility():
     a=evaluate(Policy(),Policy('call'),10,23)
     b=evaluate(Policy(),Policy('call'),10,23)
     assert a['mean']==b['mean'] and a['ci95']==b['ci95']
+
+def test_exact_resume(tmp_path):
+    import json
+    train('kuhn',200,7,tmp_path/'whole.json')
+    train('kuhn',100,7,tmp_path/'part.json')
+    train('kuhn',100,999,tmp_path/'resumed.json',tmp_path/'part.json')
+    whole=json.loads((tmp_path/'whole.json').read_text())
+    resumed=json.loads((tmp_path/'resumed.json').read_text())
+    for key in ('table','rng','iterations','exact_exploitability','seed'):
+        assert whole[key]==resumed[key]
+
+def test_full_raise_bounds_and_short_allin():
+    s=game(full_actions=True).new_initial_state()
+    while s.is_chance_node(): s.apply_action(s.chance_outcomes()[0][0])
+    assert s.legal_actions()==[0,1]+list(range(4,201))
+    s.apply_action(150)
+    # Full raise would exceed effective stack; only a short all-in is available.
+    assert s.legal_actions()==[0,1,200]
+    s.apply_action(200)
+    assert s.legal_actions()==[0,1]
+    s.apply_action(1)
+    while not s.is_terminal():
+        assert s.is_chance_node()
+        s.apply_action(s.chance_outcomes()[0][0])
+    assert sum(s.returns())==0
+
+def test_hidden_cards_invariance():
+    states=[]
+    for opponent_cards in ((2,3),(4,5)):
+        s=game().new_initial_state()
+        for card in (0,1,*opponent_cards): s.apply_action(card)
+        states.append(s)
+    assert observe(states[0])==observe(states[1])
+
+def test_reject_checkpoint_spec(tmp_path):
+    import json
+    train('kuhn',2,1,tmp_path/'c.json')
+    data=json.loads((tmp_path/'c.json').read_text())
+    data['specification']={'unexpected':1}
+    (tmp_path/'c.json').write_text(json.dumps(data))
+    with pytest.raises(ValueError): Policy('checkpoint',tmp_path/'c.json')
+
+def test_board_royal_flush_tie():
+    s=game(full_actions=True).new_initial_state()
+    for card in (0,1,4,5): s.apply_action(card)
+    s.apply_action(200); s.apply_action(1)
+    # Tc Jc Qc Kc Ac: both players must play the board.
+    for card in (32,36,40,44,48):
+        assert s.is_chance_node()
+        s.apply_action(card)
+    assert s.is_terminal() and s.returns()==[0,0]
+
+def test_suit_canonicalization():
+    from doppio.abstraction import canonical_information as canonical
+    assert canonical('[Private: AcKd][Public: QcJh2s]') == canonical('[Private: AhKs][Public: QhJd2c]')
+    assert canonical('[Private: AcKc]') != canonical('[Private: AcKd]')
+
+def test_action_encoding_mismatch(tmp_path):
+    train('holdem',1,42,tmp_path/'c.json')
+    policy=Policy('checkpoint',tmp_path/'c.json')
+    s=game(full_actions=True).new_initial_state()
+    while s.is_chance_node(): s.apply_action(s.chance_outcomes()[0][0])
+    with pytest.raises(ValueError): policy.act(observe(s),np.random.default_rng(1))

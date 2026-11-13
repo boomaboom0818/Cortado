@@ -1,0 +1,24 @@
+{
+  "game": "holdem",
+  "seed": 200000,
+  "hands": 200,
+  "independent_pairs": 100,
+  "units": "bb/100",
+  "mean": -40.0,
+  "ci95": [
+    -165.05838794712975,
+    85.05838794712973
+  ],
+  "latency_ms_p50": 0.0005469992174766958,
+  "latency_ms_p95": 0.034948697430081666,
+  "wall_seconds": 0.09717342499789083,
+  "decisions": [
+    774,
+    1141
+  ],
+  "checkpoint_misses": [
+    0,
+    0
+  ],
+  "cost": "Local CPU; monetary cost not metered"
+}

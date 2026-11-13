@@ -4,13 +4,15 @@ import numpy as np
 from scipy.stats import t
 from .game import game, observe
 
-def evaluate(a, b, pairs=100, seed=100000, name='holdem'):
+def evaluate(a, b, pairs=100, seed=100000, name='holdem', full_actions=False):
     if pairs < 2:
         raise ValueError('At least two independent pairs required')
     for policy in (a,b):
         if policy.data and policy.data['game'] != name:
             raise ValueError('Checkpoint game mismatch')
-    g = game(name)
+    if full_actions and any(p.data for p in (a,b)):
+        raise ValueError("FCPA checkpoints cannot play full-action games")
+    g = game(name, full_actions=full_actions)
     clusters, latencies = [], []
     start = time.perf_counter()
     for pair in range(pairs):
@@ -40,5 +42,5 @@ def evaluate(a, b, pairs=100, seed=100000, name='holdem'):
                 units='bb/100' if name=='holdem' else 'chips/100', mean=mean,
                 ci95=[mean-half,mean+half], latency_ms_p50=float(np.median(latencies)*1000),
                 latency_ms_p95=float(np.quantile(latencies,.95)*1000),
-                wall_seconds=time.perf_counter()-start, checkpoint_misses=[a.misses,b.misses],
+                wall_seconds=time.perf_counter()-start, decisions=[a.decisions,b.decisions], checkpoint_misses=[a.misses,b.misses],
                 cost='Local CPU; monetary cost not metered')

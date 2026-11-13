@@ -1,0 +1,23 @@
+{
+  "schema": 2,
+  "algorithm": "external_sampling_mccfr",
+  "game": "holdem",
+  "engine": "open_spiel==2.0.2",
+  "specification": {
+    "betting": "nolimit",
+    "numPlayers": 2,
+    "numRounds": 4,
+    "blind": "1 2",
+    "firstPlayer": "1 2 2 2",
+    "numSuits": 4,
+    "numRanks": 13,
+    "numHoleCards": 2,
+    "numBoardCards": "0 3 1 1",
+    "stack": "200 200",
+    "bettingAbstraction": "fcpa"
+  },
+  "iterations": 10000,
+  "seed": 42,
+  "seconds": 33.746336367003096,
+  "information_sets": 320170
+}

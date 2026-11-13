@@ -1,5 +1,5 @@
 """Policies receive immutable information sets, never engine states."""
-import json
+from .checkpoints import load
 import numpy as np
 
 class Policy:
@@ -7,12 +7,19 @@ class Policy:
         if kind not in ('uniform', 'call', 'aggressive', 'checkpoint'):
             raise ValueError(kind)
         self.kind = kind
-        self.data = json.load(open(checkpoint)) if checkpoint else None
-        if kind == 'checkpoint' and (not self.data or self.data['schema'] != 1):
+        self.data = load(checkpoint) if checkpoint else None
+        if kind == 'checkpoint' and (not self.data or self.data['schema'] not in (1, 2)):
             raise ValueError('Versioned checkpoint required')
         self.misses = 0
+        self.decisions = 0
+        if self.data:
+            from .game import game
+            self.game_id = str(game(self.data["game"]))
 
     def act(self, observation, rng):
+        if self.data and observation.game_id != self.game_id:
+            raise ValueError("Checkpoint game/action encoding mismatch")
+        self.decisions += 1
         actions = observation.legal_actions
         if self.kind == 'call':
             return 1 if 1 in actions else actions[0]

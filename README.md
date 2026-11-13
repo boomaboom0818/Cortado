@@ -27,11 +27,11 @@ Repeat evaluation with `--opponent uniform`, `--opponent aggressive`, and `--opp
 
 Action IDs in Hold'em: 0 fold, 1 check/call, 2 pot-size bet/raise, 3 all-in. Only listed legal actions may be returned. This FCPA action abstraction omits most legal bet sizes; the public API currently supports this restricted game only. No card abstraction is used, so table coverage scales extremely poorly. All-in legality and settlement are delegated to ACPC. Arbitrary raises, explicit short-all-in reopening and constructed tie regression fixtures still need independent validation before production use.
 
-Checkpoints are schema-1 JSON with engine version, game specification, seed, iteration count, runtime and information-set keys mapping to `[regrets, cumulative_average_weights]`. These are inference snapshots; resumable RNG/solver restoration is not implemented. Never substitute Kuhn checkpoints for Hold'em. Engine versions and action abstraction must remain fixed.
+Legacy checkpoints are schema-1 JSON with engine version, game specification, seed, iteration count, runtime and information-set keys mapping to `[regrets, cumulative_average_weights]`. Schema-1 files are inference-only. New schema-2 files include RNG state and support exact solver restoration via `--resume`; saves use atomic replacement. Never substitute Kuhn checkpoints for Hold'em. Engine versions and action abstraction must remain fixed.
 
 ## Actual verification
 
-Six tests pass: button order/fold payouts, postflop order, randomized legal trajectories and zero-sum stack bounds, Kuhn convergence, range normalization/blockers, and deterministic paired evaluation.
+The initial six tests covered: button order/fold payouts, postflop order, randomized legal trajectories and zero-sum stack bounds, Kuhn convergence, range normalization/blockers, and deterministic paired evaluation.
 
 Committed reports and checkpoints are in `results/`. Seed 42, 10,000 Kuhn iterations yielded exact exploitability 0.0076424254 chips/game in approximately 1.87 CPU-wall seconds. This is OpenSpiel's exact small-game best-response calculation, not Hold'em exploitability.
 
@@ -51,3 +51,20 @@ The ten-iteration Hold'em checkpoint is a smoke test only: 384 information sets,
 OpenSpiel 2.0.2 supplies both CFR and ACPC-backed universal poker: https://github.com/google-deepmind/open_spiel (Apache-2.0 project; bundled ACPC has its own notices under `open_spiel/games/universal_poker/acpc`). Preserve dependency notices when distributing binaries. Engine source: https://github.com/google-deepmind/open_spiel/blob/master/open_spiel/games/universal_poker/universal_poker.cc . PokerKit (MIT, https://github.com/uoftcprg/pokerkit/blob/main/LICENSE) was considered as an independent rules oracle, but is not a runtime dependency. This repository adds no separate license grant yet.
 
 Branches: `main` is the initialization baseline; implementation is on `develop`.
+
+
+## Correctness and training follow-up
+
+The current suite has 13 passing tests, adding full-action raise bounds, short-all-in responses, a board royal-flush split pot, hidden-opponent-card invariance, checkpoint compatibility rejection, exact split-run resumption, and suit relabeling invariance.
+
+`game(full_actions=True)` and evaluation `--full-actions` expose every legal integer-chip raise (half-BB granularity). In this encoding, 0 is fold, 1 is call/check, and raise IDs are ACPC total-commitment amounts. Use engine action descriptions; do not interpret these as FCPA IDs. FCPA checkpoints are rejected for this game. Full-action CFR training remains disabled because its branching factor is impractical. This is not arbitrary sub-chip sizing. Independent differential rules validation remains outstanding.
+
+```sh
+.venv/bin/python -m doppio.cli evaluate --game holdem --full-actions --pairs 100
+.venv/bin/python -m doppio.cli train --game holdem --iterations 1000 --resume results/holdem-10k.json.gz --checkpoint resumed.json
+.venv/bin/python -m doppio.benchmark results/holdem-10k.json.gz --historical results/holdem.json --pairs 2000
+```
+
+The committed 10,000-iteration run took 33.75 seconds of training-loop wall time and produced 320,170 information sets. Its compressed checkpoint and the four-opponent, 16,000-hand benchmark report are committed. Serialization, loading, and validation costs are not included in training-loop or decision latency measurements. Benchmark intervals are individual 95% intervals, not simultaneous multiple-comparison guarantees. These controls are weak, and substantial fallback usage persists; competitive strength remains unproven.
+
+A tested suit-relabeling primitive is available in `abstraction.py`, but is deliberately not integrated into the solver: canonical keys must be used consistently in both training and deployment, with a new checkpoint identity and convergence tests. Equity buckets, calibrated action likelihoods, adaptive betting and decision-time search are still pending. The next engineering milestone is an abstract-game adapter with validated information-set/action consistency, followed by learning curves across multiple seeds. Current mode configurations continue to share the same foundation without reducing human-mode difficulty.
