@@ -8,8 +8,10 @@ import numpy as np
 from open_spiel.python.algorithms import external_sampling_mccfr, exploitability
 from .game import game, SPEC
 from .checkpoints import load
+from .profiles import active_profile
 
-def train(name, iterations, seed, path, resume=None):
+def train(name, iterations, seed, path, resume=None, target="bot"):
+    profile = active_profile(target)
     if iterations < 1:
         raise ValueError('Positive iterations required')
     np.random.seed(seed)
@@ -17,6 +19,8 @@ def train(name, iterations, seed, path, resume=None):
     solver = external_sampling_mccfr.ExternalSamplingSolver(g)
     previous = load(resume, name) if resume else None
     if previous:
+        if previous.get('profile', {}).get('target', 'bot') != target:
+            raise ValueError('Cannot resume a checkpoint from a different target population')
         if previous['schema'] != 2:
             raise ValueError('Legacy snapshot cannot resume exactly')
         solver._infostates = {k:[np.array(x,dtype=float) for x in row] for k,row in previous['table'].items()}
@@ -30,6 +34,7 @@ def train(name, iterations, seed, path, resume=None):
                   engine='open_spiel==2.0.2', specification=SPEC if name=='holdem' else {},
                   iterations=iterations + (previous['iterations'] if previous else 0), seed=seed, seconds=time.perf_counter()-start,
                   table={k: [v[0].tolist(), v[1].tolist()] for k,v in solver._infostates.items()})
+    report['profile'] = profile.metadata()
     rng = np.random.get_state()
     report['rng'] = [rng[0],rng[1].tolist(),rng[2],rng[3],rng[4]]
     report['seconds'] += previous['seconds'] if previous else 0

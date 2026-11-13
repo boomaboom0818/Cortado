@@ -1,1 +1,10 @@
-{"schema":1,"foundation":"checkpoint","adaptation":"disabled_until_calibrated","prior_strength":100,"difficulty_reduction":false}
+{
+  "schema": 1,
+  "target": "human",
+  "status": "deferred",
+  "objective": "maximize_long_run_expected_winnings",
+  "training_population": "shared_foundation_then_validated_human_tendency_models",
+  "opponent_identity": "individual_opponent_and_session",
+  "adaptation": "disabled_until_calibrated",
+  "evaluation": "held_out_opponents_and_sessions"
+}

@@ -3,6 +3,7 @@ import json
 from .training import train
 from .evaluation import evaluate
 from .policies import Policy
+from .profiles import active_profile
 
 def main():
     p=argparse.ArgumentParser()
@@ -19,10 +20,15 @@ def main():
     p.add_argument('--opponent-checkpoint')
     p.add_argument('--mode',choices=['bot','human'],default='bot')
     a=p.parse_args()
+    try:
+        profile = active_profile(a.mode)
+    except ValueError as error:
+        p.error(str(error))
     if a.full_actions and a.command == "train":
         p.error("Full-action training is not supported; branching is prohibitive")
-    result = train(a.game,a.iterations,a.seed,a.checkpoint,a.resume) if a.command=='train' else evaluate(
+    result = train(a.game,a.iterations,a.seed,a.checkpoint,a.resume,a.mode) if a.command=='train' else evaluate(
         Policy(a.policy,a.checkpoint if a.policy=='checkpoint' else None),
         Policy(a.opponent,a.opponent_checkpoint),a.pairs,a.seed,a.game,a.full_actions)
+    result['profile'] = profile.metadata()
     print(json.dumps(result,indent=2))
 if __name__=='__main__': main()

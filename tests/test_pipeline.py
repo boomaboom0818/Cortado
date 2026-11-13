@@ -110,3 +110,22 @@ def test_action_encoding_mismatch(tmp_path):
     s=game(full_actions=True).new_initial_state()
     while s.is_chance_node(): s.apply_action(s.chance_outcomes()[0][0])
     with pytest.raises(ValueError): policy.act(observe(s),np.random.default_rng(1))
+
+def test_bot_profile_and_deferred_human(tmp_path):
+    import json
+    from doppio.profiles import active_profile, PROFILES
+    assert active_profile('bot').status == 'active'
+    assert PROFILES['bot'].objective == PROFILES['human'].objective
+    assert PROFILES['bot'].opponent_identity != PROFILES['human'].opponent_identity
+    with pytest.raises(ValueError,match='deferred'):
+        train('kuhn',1,42,tmp_path/'human.json',target='human')
+    assert not (tmp_path/'human.json').exists()
+    train('kuhn',2,42,tmp_path/'bot.json')
+    checkpoint=json.loads((tmp_path/'bot.json').read_text())
+    assert checkpoint['profile']['target']=='bot'
+
+def test_cli_rejects_deferred_human():
+    import subprocess,sys
+    result=subprocess.run([sys.executable,'-m','doppio.cli','evaluate','--mode','human'],capture_output=True,text=True)
+    assert result.returncode==2
+    assert 'deferred' in result.stderr

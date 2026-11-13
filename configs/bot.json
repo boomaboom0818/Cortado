@@ -1,1 +1,10 @@
-{"schema":1,"foundation":"checkpoint","adaptation":"disabled_until_calibrated","prior_strength":100,"difficulty_reduction":false}
+{
+  "schema": 1,
+  "target": "bot",
+  "status": "active",
+  "objective": "maximize_long_run_expected_winnings",
+  "training_population": "self_play",
+  "opponent_identity": "versioned_bot_and_checkpoint",
+  "adaptation": "disabled_until_calibrated",
+  "evaluation": "held_out_bots_and_historical_checkpoints"
+}

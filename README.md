@@ -15,7 +15,7 @@ uv pip install -r requirements.lock
 .venv/bin/python -m doppio.cli evaluate --game holdem --policy checkpoint --checkpoint holdem-100k.json --opponent call --pairs 10000 --seed 100000 --mode bot
 ```
 
-Repeat evaluation with `--opponent uniform`, `--opponent aggressive`, and `--opponent checkpoint --opponent-checkpoint <historical.json>`. Use disjoint evaluation seeds and freeze evaluation opponents before tuning. Training uses self-play, not these scripted opponents. Human mode uses `--mode human` and has identical behavior and strength. The JSON mode files document the current shared configuration; no adaptation is enabled. External platform integration is intentionally absent.
+Repeat evaluation with `--opponent uniform`, `--opponent aggressive`, and `--opponent checkpoint --opponent-checkpoint <historical.json>`. Use disjoint evaluation seeds and freeze evaluation opponents before tuning. Training uses self-play, not these scripted opponents. Bot mode (`--mode bot`, the default) is the active target. Human mode is deferred and `--mode human` now exits with an explicit error. The JSON files in `configs/` document the profiles defined in `doppio/profiles.py`; they are descriptive exports, not runtime overrides. No adaptation is enabled. External platform integration is intentionally absent.
 
 ## Architecture and API
 
@@ -67,4 +67,16 @@ The current suite has 13 passing tests, adding full-action raise bounds, short-a
 
 The committed 10,000-iteration run took 33.75 seconds of training-loop wall time and produced 320,170 information sets. Its compressed checkpoint and the four-opponent, 16,000-hand benchmark report are committed. Serialization, loading, and validation costs are not included in training-loop or decision latency measurements. Benchmark intervals are individual 95% intervals, not simultaneous multiple-comparison guarantees. These controls are weak, and substantial fallback usage persists; competitive strength remains unproven.
 
-A tested suit-relabeling primitive is available in `abstraction.py`, but is deliberately not integrated into the solver: canonical keys must be used consistently in both training and deployment, with a new checkpoint identity and convergence tests. Equity buckets, calibrated action likelihoods, adaptive betting and decision-time search are still pending. The next engineering milestone is an abstract-game adapter with validated information-set/action consistency, followed by learning curves across multiple seeds. Current mode configurations continue to share the same foundation without reducing human-mode difficulty.
+A tested suit-relabeling primitive is available in `abstraction.py`, but is deliberately not integrated into the solver: canonical keys must be used consistently in both training and deployment, with a new checkpoint identity and convergence tests. Equity buckets, calibrated action likelihoods, adaptive betting and decision-time search are still pending. The next engineering milestone is an abstract-game adapter with validated information-set/action consistency, followed by learning curves across multiple seeds. The future human profile will reuse the foundation without reducing difficulty.
+
+
+## Bot-first development targets
+
+There is one codebase and a shared poker/CFR foundation. The profiles identify opponent populations, not easy/hard settings. We have not trained two distinct models.
+
+- **Bot target (active):** self-play foundation first; frozen bot versions and historical checkpoints are the evaluation population. Future modeling should infer a distribution over opponent strategies and hands from public actions, conditioned on bot version where legitimately known. Exploitation must earn its place through held-out evidence. Generalization to unseen bot versions is the key test.
+- **Human target (deferred):** initialize from the validated foundation later, then model individual/session tendencies, uncertainty, sparse observations and behavior changes. Evaluate on held-out opponents and sessions. Do not assume all humans share tendencies, lower difficulty, or optimize entertainment.
+
+New training checkpoints and CLI evaluation reports record a `profile` identifier. Existing checkpoints predate this metadata and are treated as bot-foundation artifacts for resumption. Opponent data for the future human target must use a separate namespace and must not contaminate frozen bot evaluation sets. No opponent-history persistence is implemented yet.
+
+Bot-first milestones: integrate and validate the abstraction adapter; train multiple reproducible seeds; improve coverage and benchmark against stronger independent bots; only then enable calibrated exploitation. Human-specific adaptation comes after these gates. Both profiles maximize long-run expected winnings, and neither uses an LLM as a betting engine.

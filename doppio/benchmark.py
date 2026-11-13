@@ -3,6 +3,7 @@ import argparse
 import json
 from .evaluation import evaluate
 from .policies import Policy
+from .profiles import active_profile
 
 def main():
     p=argparse.ArgumentParser()
@@ -16,5 +17,5 @@ def main():
         reports[kind]=evaluate(Policy('checkpoint',args.checkpoint),
             Policy(kind,args.historical if kind=='checkpoint' else None),
             args.pairs,args.seed+index*100000,'holdem')
-    print(json.dumps(reports,indent=2))
+    print(json.dumps({'profile': active_profile('bot').metadata(), 'opponents': reports},indent=2))
 if __name__=='__main__': main()
