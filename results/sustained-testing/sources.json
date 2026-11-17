@@ -1,0 +1,10 @@
+{
+  "42": {
+    "path": "runs/cpu-sustained/seed-42/latest.json.gz",
+    "sha256": "16f98aa759211802398c3d99d63c43c15156a1767615911a65014757efecc95a"
+  },
+  "43": {
+    "path": "runs/cpu-sustained/seed-43/latest.json.gz",
+    "sha256": "21bc6d89f2fd52727d2739c08f073f277279efd74229ee6486f48faca361eaaf"
+  }
+}
