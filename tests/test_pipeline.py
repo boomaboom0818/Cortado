@@ -142,3 +142,12 @@ def test_raise_action_mapping():
     assert s.current_player()==1
     assert 'move=Call' in s.action_to_string(1)
     assert 1 in s.legal_actions()
+
+
+def test_full_minimum_reraise_and_uncalled_return():
+    s=game(full_actions=True).new_initial_state()
+    while s.is_chance_node():s.apply_action(s.chance_outcomes()[0][0])
+    s.apply_action(6)
+    assert s.legal_actions()==[0,1]+list(range(10,201))
+    s.apply_action(0)
+    assert s.is_terminal() and s.returns()==[2,-2]

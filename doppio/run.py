@@ -15,7 +15,7 @@ DEFAULT = dict(schema=1, game='holdem', target='bot', representation='suits-v1',
 def run(config_path, directory, resume=False):
     with open(config_path) as stream:
         config=json.load(stream)
-    if set(config)!=set(DEFAULT) or config['schema']!=1:
+    if set(config)-{'storage'}!=set(DEFAULT) or config['schema']!=1 or config.get('storage','memory') not in ('memory','sqlite'):
         raise ValueError('Config must contain exactly the version-1 run fields')
     for package,expected in (('open-spiel','2.0.2'),('numpy','2.5.4')):
         if version(package)!=expected:
@@ -28,7 +28,8 @@ def run(config_path, directory, resume=False):
         except BlockingIOError as error:
             raise ValueError('Another trainer owns this run directory') from error
         manifest=directory/'config.json'
-        checkpoint=directory/'latest.json.gz'
+        suffix = 'sqlite' if config.get('storage') == 'sqlite' else 'json.gz'
+        checkpoint=directory/f'latest.{suffix}'
         if resume:
             if not checkpoint.exists() or not manifest.exists():
                 raise ValueError('Resume requires an existing manifest and checkpoint')
@@ -47,7 +48,7 @@ def run(config_path, directory, resume=False):
                      metrics_path=directory/'metrics.jsonl')
         save(directory/'summary.json',result)
         # Keep a historical inference/resume artifact for each invocation.
-        shutil.copy2(checkpoint,directory/f"iteration-{result['iterations']}.json.gz")
+        shutil.copy2(checkpoint,directory/f"iteration-{result['iterations']}.{suffix}")
         return result
 
 def main():

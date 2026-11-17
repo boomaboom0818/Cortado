@@ -14,7 +14,7 @@ def main():
     parser.add_argument('--seed',type=int,default=880000)
     args=parser.parse_args()
     root=Path(args.run_dir)
-    checkpoints=sorted(root.glob('seed-*/latest.json.gz'))
+    checkpoints=sorted([*root.glob('seed-*/latest.json.gz'), *root.glob('seed-*/latest.sqlite')])
     if not checkpoints:
         parser.error('No worker checkpoints found')
     reports={}

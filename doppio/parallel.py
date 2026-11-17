@@ -17,6 +17,7 @@ def launch(config_path, directory, seeds, resume=False, bootstrap_from=None):
     if resume and bootstrap_from:
         raise ValueError('Bootstrap and resume are mutually exclusive')
     config=json.loads(Path(config_path).read_text())
+    suffix = 'sqlite' if config.get('storage') == 'sqlite' else 'json.gz'
     directory=Path(directory)
     directory.mkdir(parents=True,exist_ok=True)
     manifest=dict(schema=1,config=config,seeds=seeds,parallelism='independent_processes')
@@ -39,7 +40,7 @@ def launch(config_path, directory, seeds, resume=False, bootstrap_from=None):
         if resume:
             if not manifest_path.exists() or json.loads(manifest_path.read_text())!=manifest:
                 raise ValueError('Resume requires identical experiment manifest')
-            if any(not (directory/f'seed-{seed}'/'latest.json.gz').exists() for seed in seeds):
+            if any(not (directory/f'seed-{seed}'/f'latest.{suffix}').exists() for seed in seeds):
                 raise ValueError('All seeds need checkpoints before resume')
         elif manifest_path.exists():
             raise ValueError('Experiment exists; use --resume or a new directory')
@@ -49,16 +50,26 @@ def launch(config_path, directory, seeds, resume=False, bootstrap_from=None):
                 source=Path(bootstrap_from)
                 from .checkpoints import load
                 for seed in seeds:
-                    checkpoint=source/f'seed-{seed}'/'latest.json.gz'
+                    checkpoint=next((source/f'seed-{seed}').glob('latest.sqlite'),source/f'seed-{seed}'/'latest.json.gz')
                     data=load(checkpoint, config['game'])
                     if data['seed'] != seed or data.get('representation','exact-v1') != config['representation']:
                         raise ValueError('Bootstrap seed or representation mismatch')
+                    if hasattr(data['table'],'close'):
+                        data['table'].close()
                     del data
                 for seed in seeds:
                     worker=directory/f'seed-{seed}'
                     worker.mkdir(exist_ok=True)
                     save(worker/'config.json',dict(config,seed=seed))
-                    shutil.copy2(source/f'seed-{seed}'/'latest.json.gz',worker/'latest.json.gz')
+                    checkpoint=next((source/f'seed-{seed}').glob('latest.sqlite'),source/f'seed-{seed}'/'latest.json.gz')
+                    if checkpoint.suffix == '.sqlite' and suffix == 'sqlite':
+                        shutil.copy2(checkpoint,worker/f'latest.{suffix}')
+                    else:
+                        data=load(checkpoint)
+                        save(worker/f'latest.{suffix}',data)
+                        if hasattr(data['table'],'close'):
+                            data['table'].close()
+                        del data
             save(manifest_path,manifest)
         for sig in (signal.SIGINT,signal.SIGTERM):
             handlers[sig]=signal.signal(sig,stop)
