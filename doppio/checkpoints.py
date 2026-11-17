@@ -44,7 +44,8 @@ def save(path, data):
     try:
         opener = gzip.open if str(target).endswith('.gz') else open
         with opener(temporary, 'wt') as stream:
-            json.dump(data, stream, sort_keys=True, allow_nan=False)
+            json.dump(data, stream, sort_keys=False, allow_nan=False,
+                      default=lambda value: value.tolist() if isinstance(value, np.ndarray) else _unsupported(value))
         with open(temporary, 'rb') as stream:
             os.fsync(stream.fileno())
         os.replace(temporary, target)
@@ -56,3 +57,7 @@ def save(path, data):
     finally:
         if os.path.exists(temporary):
             os.unlink(temporary)
+
+
+def _unsupported(value):
+    raise TypeError(f"Unsupported checkpoint value: {type(value).__name__}")

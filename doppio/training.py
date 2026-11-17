@@ -41,7 +41,12 @@ def train(name, iterations, seed, path, resume=None, target='bot', *,
     original_rng = np.random.get_state()
     np.random.seed(seed)
     if previous:
-        solver._infostates = {k:[np.array(x,dtype=float) for x in row] for k,row in previous['table'].items()}
+        # Release each JSON row as it is converted; avoid retaining two whole tables.
+        rows = previous.pop('table')
+        for key in list(rows):
+            row = rows.pop(key)
+            solver._infostates[key] = [np.array(x,dtype=float) for x in row]
+        del rows
         r = previous['rng']
         np.random.set_state((r[0],np.array(r[1],dtype=np.uint32),r[2],r[3],r[4]))
         seed = previous['seed']
@@ -66,7 +71,7 @@ def train(name, iterations, seed, path, resume=None, target='bot', *,
                       stop_reason=reason, peak_rss_mb=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1024,
                       runtime={'python':platform.python_version(),'numpy':np.__version__,'platform':platform.platform()},
                       rng=[rng[0],rng[1].tolist(),rng[2],rng[3],rng[4]],
-                      table={k:[x.tolist() for x in v] for k,v in solver._infostates.items()})
+                      table=solver._infostates)
         if name in ('kuhn','leduc'):
             report['exact_exploitability']=exploitability.exploitability(raw_game,solver.average_policy())
         save(path,report)

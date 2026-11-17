@@ -84,3 +84,13 @@ def test_run_manifest_and_resume(tmp_path):
     assert (directory/'iteration-4.json.gz').exists()
     data=json.loads(config.read_text()); data['seed']=99; config.write_text(json.dumps(data))
     with pytest.raises(ValueError,match='differs'): run(config,directory,True)
+
+
+def test_numpy_stream_save(tmp_path):
+    from doppio.checkpoints import save
+    path=tmp_path/'arrays.json.gz'
+    train('kuhn',10,42,path)
+    data=load(path)
+    data['table']={k:[np.array(x) for x in row] for k,row in data['table'].items()}
+    save(path,data)
+    assert all(isinstance(row[0],list) for row in load(path)['table'].values())

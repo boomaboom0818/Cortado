@@ -11,9 +11,11 @@ import time
 from .checkpoints import save
 
 
-def launch(config_path, directory, seeds, resume=False):
+def launch(config_path, directory, seeds, resume=False, bootstrap_from=None):
     if not seeds or len(seeds)!=len(set(seeds)) or any(s<0 for s in seeds):
         raise ValueError('Provide distinct nonnegative seeds')
+    if resume and bootstrap_from:
+        raise ValueError('Bootstrap and resume are mutually exclusive')
     config=json.loads(Path(config_path).read_text())
     directory=Path(directory)
     directory.mkdir(parents=True,exist_ok=True)
@@ -42,6 +44,21 @@ def launch(config_path, directory, seeds, resume=False):
         elif manifest_path.exists():
             raise ValueError('Experiment exists; use --resume or a new directory')
         else:
+            if bootstrap_from:
+                import shutil
+                source=Path(bootstrap_from)
+                from .checkpoints import load
+                for seed in seeds:
+                    checkpoint=source/f'seed-{seed}'/'latest.json.gz'
+                    data=load(checkpoint, config['game'])
+                    if data['seed'] != seed or data.get('representation','exact-v1') != config['representation']:
+                        raise ValueError('Bootstrap seed or representation mismatch')
+                    del data
+                for seed in seeds:
+                    worker=directory/f'seed-{seed}'
+                    worker.mkdir(exist_ok=True)
+                    save(worker/'config.json',dict(config,seed=seed))
+                    shutil.copy2(source/f'seed-{seed}'/'latest.json.gz',worker/'latest.json.gz')
             save(manifest_path,manifest)
         for sig in (signal.SIGINT,signal.SIGTERM):
             handlers[sig]=signal.signal(sig,stop)
@@ -56,7 +73,7 @@ def launch(config_path, directory, seeds, resume=False):
                 handles.append(output)
                 cmd=[sys.executable,'-m','doppio.run','--config',str(worker_config),
                      '--run-dir',str(directory/f'seed-{seed}')]
-                if resume:
+                if resume or bootstrap_from:
                     cmd.append('--resume')
                 children.append(subprocess.Popen(cmd,env=env,stdout=output,stderr=subprocess.STDOUT))
             codes=[child.wait() for child in children]
@@ -90,9 +107,10 @@ def main():
     p.add_argument('--run-dir',required=True)
     p.add_argument('--seeds',type=int,nargs='+',default=[42,43])
     p.add_argument('--resume',action='store_true')
+    p.add_argument('--bootstrap-from',help='Copy compatible existing checkpoints into a fresh experiment')
     args=p.parse_args()
     try:
-        print(json.dumps(launch(args.config,args.run_dir,args.seeds,args.resume),indent=2))
+        print(json.dumps(launch(args.config,args.run_dir,args.seeds,args.resume,args.bootstrap_from),indent=2))
     except (ValueError,RuntimeError) as error:
         p.error(str(error))
 

@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "game": "holdem",
+  "target": "bot",
+  "representation": "suits-v1",
+  "seed": 42,
+  "iterations": 1000000,
+  "checkpoint_every": 2000,
+  "max_seconds": 1800,
+  "max_rss_mb": 1024
+}

@@ -146,3 +146,18 @@ To evaluate every completed worker against the same development pool (use separa
 ```
 
 Run evaluation while trainers are stopped to avoid loading large tables during checkpoint serialization. The paired deals are shared across candidates for comparable conditions; each report's uncertainty remains computed over independent deal pairs. Do not select a candidate solely from one noisy matchup.
+
+## Sustained testing with 30-minute checks
+
+Checkpoint serialization now converts NumPy arrays one row at a time instead of duplicating the entire strategy table. Resume releases JSON rows while converting them. The schema and exact strategy/RNG values remain compatible; unit tests cover save/load and exact resumption. JSON loading and table growth still consume substantial memory.
+
+A fresh experiment can continue existing checkpoints under new explicit resource settings without modifying the original experiment manifest:
+
+```sh
+.venv/bin/python -m doppio.parallel --config configs/train-sustained.json --run-dir runs/cpu-sustained --seeds 42 43 --bootstrap-from runs/cpu-pilot
+.venv/bin/python -m doppio.status --run-dir runs/cpu-sustained
+```
+
+The sustained config permits one 30-minute training invocation per worker, up to one million additional iterations, with the existing 1 GiB soft memory limit. It does not raise the resource cap or automatically restart after memory stops. The lightweight status command reports process RSS, checkpoint age, latest saved metrics and disk space without loading strategy tables. `summary` can be from an earlier invocation; active processes and timestamps must be checked too.
+
+The requested 30-minute checks are scheduled through T3 separately from the Python trainer. They require this computer and T3 to stay available. A scheduled check should inspect health/logs, stop on resource or correctness failures, evaluate completed checkpoints sequentially, and record results. Never repeatedly resume a memory-stopped run without an explicit engineering change. Continuous wall-clock observation is not a hard memory cap; trainer resource checks remain iteration-boundary checks.
