@@ -1,0 +1,14 @@
+{
+  "42": {
+    "path": "runs/bot-campaign/seed-42/latest.sqlite",
+    "bytes": 3842510848,
+    "sha256": "4039b83d22ad14576dc3a4dfb442a2a9ddcc44da3e6aa84463c90b58f3ed63fc",
+    "iterations": 523923
+  },
+  "43": {
+    "path": "runs/bot-campaign/seed-43/latest.sqlite",
+    "bytes": 4248764416,
+    "sha256": "8be0fc44de59776115f6ba4a650a85756b0f63d07590e4358b210ce53c23f32a",
+    "iterations": 565390
+  }
+}
