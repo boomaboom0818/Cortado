@@ -19,7 +19,7 @@ from .abstraction import AbstractGame, REPRESENTATIONS
 
 
 def _digest(representation):
-    if representation != 'buckets-v1':
+    if representation not in ('buckets-v1', 'buckets-v2'):
         return None
     from .buckets import edge_digest
     return edge_digest()

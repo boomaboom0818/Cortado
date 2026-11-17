@@ -11,7 +11,7 @@ def main():
     p.add_argument('--game',choices=['kuhn','leduc','holdem'],default='kuhn')
     p.add_argument('--iterations',type=int,default=1000)
     p.add_argument('--resume')
-    p.add_argument('--representation',choices=['exact-v1','suits-v1','buckets-v1'])
+    p.add_argument('--representation',choices=['exact-v1','suits-v1','buckets-v1','buckets-v2'])
     p.add_argument('--checkpoint-every',type=int,default=1000)
     p.add_argument('--max-seconds',type=float)
     p.add_argument('--max-rss-mb',type=float)

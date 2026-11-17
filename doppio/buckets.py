@@ -3,9 +3,10 @@
 Preflop is lossless (169 strategic classes). Postflop keeps only the street and
 an expected-hand-strength bucket (equity versus a uniformly random hand and
 random runout) of the current street; earlier postflop buckets are forgotten
-(imperfect recall). Public betting and board *texture* are not represented
-beyond the street, so flush/straight textures and draw-vs-made distinctions are
-approximated. Bucket edges are fixed quantiles from `data/buckets-v1.json`.
+(imperfect recall). In `buckets-v1` board texture is not represented, so
+flush/paired boards and draw-vs-made distinctions are approximated; `buckets-v2`
+adds a 6-class public texture (flush potential x paired board). Straight texture
+and draw-vs-made distinctions remain approximated by equity only. Bucket edges are fixed quantiles from `data/buckets-v1.json`.
 """
 import hashlib
 import json
@@ -57,10 +58,20 @@ def bucket(hole, board, boundaries=None):
     return int(np.searchsorted(boundaries, strength(hole, board), side='right'))
 
 
-def bucket_information(information):
+def texture(board):
+    """Public board texture (buckets-v2): flush potential x paired board, 6 classes."""
+    suits = max(sum(c[1] == s for c in board) for s in 'cdhs')
+    flush = 0 if suits < 3 else 1 if suits == 3 else 2
+    paired = len({c[0] for c in board}) < len(board)
+    return 2 * flush + paired
+
+
+def bucket_information(information, with_texture=False):
     """Replace private/public cards with a lossless preflop class or postflop bucket."""
     hole, board = parse_information(information)
     label = preflop_class(hole) if not board else f'S{len(board)}B{bucket(hole, board)}'
+    if board and with_texture:
+        label += f'T{texture(board)}'
     return _CARDS.sub(f'[Cards: {label}]', information, count=1)
 
 import re

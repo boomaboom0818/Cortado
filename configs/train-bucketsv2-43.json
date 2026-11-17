@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "game": "holdem",
+  "target": "bot",
+  "representation": "buckets-v2",
+  "stack_bb": 100,
+  "seed": 43,
+  "iterations": 1000000,
+  "checkpoint_every": 20000,
+  "max_seconds": 3600,
+  "max_rss_mb": 4000
+}

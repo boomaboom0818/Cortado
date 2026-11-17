@@ -39,3 +39,20 @@ def test_bucket_key_hides_cards_but_keeps_betting():
     key = information_key(o.information, o.legal_actions, 'buckets-v1')
     assert 'Private' not in key and 'Public' not in key and 'Sequences: r6' in key and '[Cards: ' in key
     assert len(edge_digest()) == 64
+
+
+def test_v2_adds_public_texture_only():
+    from doppio.buckets import texture
+    assert texture(('Ah', '7h', '2h')) == 2 and texture(('Ah', 'Ad', '2c')) == 1
+    assert texture(('Ah', '7d', '2c')) == 0 and texture(('Ah', 'Kh', 'Qh', 'Jh')) == 4
+    g = game('holdem')
+    s = g.new_initial_state()
+    for c in (0, 1, 9, 10):
+        s.apply_action(c)
+    s.apply_action(1); s.apply_action(1)
+    for c in (20, 24, 28):
+        s.apply_action(c)
+    o = observe(s)
+    v1 = information_key(o.information, o.legal_actions, 'buckets-v1')
+    v2 = information_key(o.information, o.legal_actions, 'buckets-v2')
+    assert v2 != v1 and v2.replace(v2[v2.index('T', v2.index('Cards')):v2.index(']', v2.index('Cards'))], '') == v1

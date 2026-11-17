@@ -16,7 +16,7 @@ class Policy:
         if self.data:
             from .game import game
             self.game_id = str(game(self.data["game"], stack_bb=self.data.get("stack_bb", 100)) if self.data["game"] == "holdem" else game(self.data["game"]))
-            if self.data.get('representation') == 'buckets-v1':
+            if self.data.get('representation') in ('buckets-v1', 'buckets-v2'):
                 from .buckets import edge_digest
                 if self.data.get('abstraction_digest') != edge_digest():
                     raise ValueError('Checkpoint bucket edges do not match installed edges')
