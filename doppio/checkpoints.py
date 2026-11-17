@@ -18,13 +18,13 @@ def load(path, name=None):
         raise ValueError('Unsupported checkpoint schema or engine')
     if data.get('algorithm') != 'external_sampling_mccfr':
         raise ValueError('Unsupported algorithm')
-    if data.get('game') not in ('holdem', 'kuhn') or (name and data['game'] != name):
+    if data.get('game') not in ('holdem', 'kuhn', 'leduc') or (name and data['game'] != name):
         raise ValueError('Checkpoint game mismatch')
     if data.get('specification') != (SPEC if data['game']=='holdem' else {}):
         raise ValueError('Checkpoint specification mismatch')
     if data.get('representation', 'exact-v1') not in REPRESENTATIONS:
         raise ValueError('Unknown checkpoint representation')
-    if data['game'] == 'kuhn' and data.get('representation', 'exact-v1') != 'exact-v1':
+    if data['game'] in ('kuhn', 'leduc') and data.get('representation', 'exact-v1') != 'exact-v1':
         raise ValueError('Kuhn requires exact representation')
     for key, row in data['table'].items():
         values = np.asarray(row, dtype=float)

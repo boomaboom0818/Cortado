@@ -1,0 +1,13 @@
+# Training assessment — 2026-11-17
+
+Host seen by this workspace: Intel i7-9750H (6 cores/12 threads), 15 GiB RAM, NVIDIA GTX 1660 Ti 6 GiB. This is not the 9950X machine. No AWS resources used.
+
+Leduc external-sampling MCCFR: seed 42, 10,000 iterations, 11.41 seconds, 936 information sets, exact exploitability 0.24094 chips/game. This tests the small-game pipeline; it is not Hold'em exploitability. Reproduce using `python -m doppio.cli train --game leduc --iterations 10000 --seed 42 --checkpoint /tmp/leduc.json.gz --checkpoint-every 10000`.
+
+Hold'em suits-v1 pilot: seed 123, 1,000/2,000/3,000 iterations took cumulative 10.92/18.89/26.51 seconds, with 33,898/64,920/93,880 information sets and 142.5/161.0/195.9 MiB peak RSS reported before each snapshot's serialization. Timings include earlier periodic saves and concurrent system activity; don't extrapolate indefinitely. Detailed final report and benchmark are in profile-training.json and profile-benchmark.json. The call-opponent evaluation saw 1,213 misses in 2,214 decisions. Coverage depends heavily on opponent and does not establish quality. Each evaluation used 500 independent pairs; intervals are wide.
+
+GPU assessment: installed PyTorch 2.15.0+cu132 and dm-tree locally for an experiment; CUDA detects the GTX 1660 Ti. OpenSpiel 2.0.2's existing PyTorch Deep CFR fails on the first Kuhn traversal on CUDA: `RuntimeError: legacy constructor expects device type: cpu but device type: cuda was passed` in `_sample_action_from_advantage`. No small-game convergence validation was achieved. These experimental dependencies are not in the project lockfile. This failure does not establish that GPU Deep CFR cannot work after a compatibility fix.
+
+Provisional compute budget: this host, one trainer, 1 GiB soft peak RSS threshold, one-hour maximum per invocation, periodic checkpoints every 1,000 iterations; reserve memory for serialization and the desktop. No sustained unattended run until the abstraction and action/rules tests are validated. AWS budget: $0 until local approach passes validation. 9950X resources and GPU need separate measurement. A 1 GiB soft threshold is not a hard process cap and is checked only after iterations.
+
+Decision gate remains open: fix and validate the existing GPU implementation on Kuhn and Leduc, then compare measured convergence and throughput against CPU. Otherwise pursue one validated card-bucket MCCFR approach. Neither is currently ready for the scheduled sustained training. Independent engine differential tests of raises and payouts, richer action mapping, draw-aware buckets, opponent pool, daily held-out evaluation and final freeze remain unfinished.

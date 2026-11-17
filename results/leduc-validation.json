@@ -1,0 +1,31 @@
+{
+  "schema": 3,
+  "algorithm": "external_sampling_mccfr",
+  "game": "leduc",
+  "engine": "open_spiel==2.0.2",
+  "specification": {},
+  "representation": "exact-v1",
+  "profile": {
+    "schema": 1,
+    "target": "bot",
+    "status": "active",
+    "objective": "maximize_long_run_expected_winnings",
+    "training_population": "self_play",
+    "opponent_identity": "versioned_bot_and_checkpoint",
+    "adaptation": "disabled_until_calibrated",
+    "evaluation": "held_out_bots_and_historical_checkpoints"
+  },
+  "iterations": 10000,
+  "seed": 42,
+  "seconds": 11.410727604001295,
+  "stop_reason": "completed",
+  "peak_rss_mb": 122.5234375,
+  "runtime": {
+    "python": "3.12.16",
+    "numpy": "2.5.4",
+    "platform": "Linux-7.0.0-43-generic-x86_64-with-glibc2.43"
+  },
+  "exact_exploitability": 0.24094003351386278,
+  "information_sets": 936,
+  "checkpoint_bytes": 37836
+}

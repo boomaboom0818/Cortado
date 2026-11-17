@@ -117,3 +117,32 @@ The readiness pilot uses seed 123, 1,000 suit-abstracted iterations and four hel
 ```
 
 Before committing large compute: measure coverage, RAM growth and iterations/second at several run lengths and seeds; evaluate against stronger independent agents; select and validate a strategic/equity abstraction or neural CFR implementation if table growth is unacceptable. Those research choices remain necessary for competitive-scale training. No honest total training-hours estimate follows from this pilot, and no full Hold'em exploitability claim is made. Opponent adaptation remains disabled pending calibration.
+
+## Parallel CPU training
+
+The CPU launcher runs independent MCCFR seeds in separate processes. Each worker has a separate regret table, RNG, run directory, log, and checkpoint. This uses multiple cores without sharing Python RNG state or concurrently modifying a CFR table. It increases aggregate experiment throughput; it does not divide one strategy's learning time by the worker count. Do not average regret tables from independent runs.
+
+```sh
+# Conservative starting point for this 15 GiB host: two independent workers.
+.venv/bin/python -m doppio.parallel --config configs/train-cpu.json --run-dir runs/cpu-training --seeds 42 43
+# Continue each seed for another bounded invocation.
+.venv/bin/python -m doppio.parallel --config configs/train-cpu.json --run-dir runs/cpu-training --seeds 42 43 --resume
+# Reproduce the concurrency sweep, using a new directory each time.
+.venv/bin/python -m doppio.cpu_experiment --run-dir runs/cpu-sweep-new --iterations 1000
+```
+
+The supplied CPU config uses a one-hour maximum per worker, 100,000 additional iterations, a 1 GiB **soft** peak-RSS threshold per worker, and a save every 1,000 iterations. Serialization and loading can exceed that memory threshold. Use two workers initially, keep the desktop's memory reserve, and inspect logs before adding workers. Set BLAS/OpenMP threads to one per worker (the launcher does this). On the 9950X, first rerun the sweep and measure available RAM; this workspace is a different computer.
+
+SIGINT/SIGTERM to the launcher forwards SIGTERM to running workers, which finish their current iteration and save. The launcher waits for them and records exit codes. A hard kill cannot guarantee the latest work. Resume requires an identical experiment manifest and an existing checkpoint for every seed. Errors are visible in `seed-*.log` and through a nonzero launcher exit. The outer directory lock prevents duplicate launches. Each worker also retains the original run lock. The launcher launches one bounded invocation and exits; it does not silently restart forever.
+
+Evaluate candidates using development seeds and a frozen opponent pool. `doppio.cpu_experiment` evaluates its two-worker candidates against the calling control with development seed 880000; this is a pipeline/coverage diagnostic, not evidence of competitive play. The table still grows rapidly and unseen states fall back to uniform actions. Suit abstraction is not a strategic card bucket. Sustained runs are operationally supported, but competitive-scale representation, independent opponent integration and final untouched evaluation remain research tasks.
+
+Parallel launcher tests cover independent worker state, resume, config rejection, and SIGTERM forwarding with readable completed checkpoints. Leduc validation is now available through `--game leduc` and reports exact small-game exploitability.
+
+To evaluate every completed worker against the same development pool (use separate final-test seeds later):
+
+```sh
+.venv/bin/python -m doppio.evaluate_workers --run-dir runs/cpu-training --historical results/holdem-10k.json.gz --pairs 2000
+```
+
+Run evaluation while trainers are stopped to avoid loading large tables during checkpoint serialization. The paired deals are shared across candidates for comparable conditions; each report's uncertainty remains computed over independent deal pairs. Do not select a candidate solely from one noisy matchup.

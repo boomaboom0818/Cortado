@@ -129,3 +129,16 @@ def test_cli_rejects_deferred_human():
     result=subprocess.run([sys.executable,'-m','doppio.cli','evaluate','--mode','human'],capture_output=True,text=True)
     assert result.returncode==2
     assert 'deferred' in result.stderr
+
+def test_leduc_cfr_validation(tmp_path):
+    r=train('leduc',10000,42,tmp_path/'leduc.json.gz')
+    assert r['exact_exploitability'] < 0.3
+    assert r['information_sets'] == 936
+
+def test_raise_action_mapping():
+    s=dealt()
+    assert [s.action_to_string(a).split('move=')[-1] for a in s.legal_actions()]==['Fold','Call','Bet','AllIn']
+    s.apply_action(2)
+    assert s.current_player()==1
+    assert 'move=Call' in s.action_to_string(1)
+    assert 1 in s.legal_actions()

@@ -7,8 +7,8 @@ SPEC = dict(betting='nolimit', numPlayers=2, numRounds=4, blind='1 2',
             numBoardCards='0 3 1 1', stack='200 200', bettingAbstraction='fcpa')
 
 def game(name='holdem', *, full_actions=False):
-    if name == 'kuhn':
-        return pyspiel.load_game('kuhn_poker')
+    if name in ('kuhn', 'leduc'):
+        return pyspiel.load_game(name + '_poker')
     if name != 'holdem':
         raise ValueError(name)
     return pyspiel.load_game('universal_poker', dict(SPEC, bettingAbstraction='fullgame' if full_actions else 'fcpa'))

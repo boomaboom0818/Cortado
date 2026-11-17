@@ -8,7 +8,7 @@ from .profiles import active_profile
 def main():
     p=argparse.ArgumentParser()
     p.add_argument('command',choices=['train','evaluate'])
-    p.add_argument('--game',choices=['kuhn','holdem'],default='kuhn')
+    p.add_argument('--game',choices=['kuhn','leduc','holdem'],default='kuhn')
     p.add_argument('--iterations',type=int,default=1000)
     p.add_argument('--resume')
     p.add_argument('--representation',choices=['exact-v1','suits-v1'])

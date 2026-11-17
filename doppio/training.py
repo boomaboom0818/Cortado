@@ -25,7 +25,7 @@ def train(name, iterations, seed, path, resume=None, target='bot', *,
     previous = load(resume, name) if resume else None
     inherited = previous.get('representation', 'exact-v1') if previous else 'exact-v1'
     representation = representation or inherited
-    if representation not in REPRESENTATIONS or (name=='kuhn' and representation!='exact-v1'):
+    if representation not in REPRESENTATIONS or (name in ('kuhn','leduc') and representation!='exact-v1'):
         raise ValueError('Invalid representation for game')
     if previous and representation != inherited:
         raise ValueError('Cannot change representation on resume')
@@ -67,7 +67,7 @@ def train(name, iterations, seed, path, resume=None, target='bot', *,
                       runtime={'python':platform.python_version(),'numpy':np.__version__,'platform':platform.platform()},
                       rng=[rng[0],rng[1].tolist(),rng[2],rng[3],rng[4]],
                       table={k:[x.tolist() for x in v] for k,v in solver._infostates.items()})
-        if name=='kuhn':
+        if name in ('kuhn','leduc'):
             report['exact_exploitability']=exploitability.exploitability(raw_game,solver.average_policy())
         save(path,report)
         summary={k:v for k,v in report.items() if k not in ('table','rng')}
