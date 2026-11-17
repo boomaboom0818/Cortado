@@ -15,7 +15,7 @@ DEFAULT = dict(schema=1, game='holdem', target='bot', representation='suits-v1',
 def run(config_path, directory, resume=False):
     with open(config_path) as stream:
         config=json.load(stream)
-    if set(config)-{'storage'}!=set(DEFAULT) or config['schema']!=1 or config.get('storage','memory') not in ('memory','sqlite'):
+    if set(config)-{'storage','stack_bb'}!=set(DEFAULT) or config['schema']!=1 or config.get('storage','memory') not in ('memory','sqlite'):
         raise ValueError('Config must contain exactly the version-1 run fields')
     for package,expected in (('open-spiel','2.0.2'),('numpy','2.5.4')):
         if version(package)!=expected:
@@ -43,7 +43,7 @@ def run(config_path, directory, resume=False):
             save(manifest,config)
         result=train(config['game'],config['iterations'],config['seed'],checkpoint,
                      resume=checkpoint if resume else None,target=config['target'],
-                     representation=config['representation'],checkpoint_every=config['checkpoint_every'],
+                     representation=config['representation'],stack_bb=config.get('stack_bb',100),checkpoint_every=config['checkpoint_every'],
                      max_seconds=config['max_seconds'],max_rss_mb=config['max_rss_mb'],
                      metrics_path=directory/'metrics.jsonl')
         save(directory/'summary.json',result)

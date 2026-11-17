@@ -12,9 +12,7 @@ from itertools import combinations
 import numpy as np
 from .cards import DECK, parse_information, showdown_value
 from .fullaction import commitments, parse_sequence
-from .game import game, observe
-
-FULL = game('holdem', full_actions=True)
+from .game import game, observe, stack_of
 
 
 def action_ids(information):
@@ -28,9 +26,9 @@ def action_ids(information):
     return pairs
 
 
-def build(seat_holes, board, ids):
+def build(seat_holes, board, ids, full):
     """Trusted harness-side reconstruction of the real state for hypothetical private cards."""
-    state = FULL.new_initial_state()
+    state = full.new_initial_state()
     for hole in seat_holes:
         for card in hole:
             state.apply_action(DECK.index(card))
@@ -50,6 +48,7 @@ class LBR:
     def __init__(self, victim, hands=60, runouts=2, sizes=(.5, 1., 2.)):
         self.victim, self.hands, self.runouts, self.sizes = victim, hands, runouts, sizes
         self.decisions = self.misses = 0
+        self.full = game('holdem', full_actions=True, stack_bb=victim.stack_bb)
 
     def _holes(self, me, mine, v_hole):
         return (mine, v_hole) if me == 0 else (v_hole, mine)
@@ -60,7 +59,7 @@ class LBR:
         legal = observation.legal_actions
         mine, board = parse_information(observation.information)
         history = action_ids(observation.information)
-        commits = commitments(observation.information)
+        commits = commitments(observation.information, stack_of(observation.game_id))
         known = set(mine) | set(board)
         pool = [c for c in DECK if c not in known]
         combos = list(combinations(pool, 2))
@@ -71,7 +70,7 @@ class LBR:
         def probabilities(v_hole, prefix_ids):
             key = (v_hole, tuple(prefix_ids))
             if key not in memo:
-                state = build(self._holes(me, mine, v_hole), board, prefix_ids)
+                state = build(self._holes(me, mine, v_hole), board, prefix_ids, self.full)
                 memo[key] = self.victim.distribution(observe(state))[:2]
             return memo[key]
 

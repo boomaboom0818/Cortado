@@ -4,7 +4,7 @@ import numpy as np
 from scipy.stats import t
 from .game import game, observe
 
-def evaluate(a, b, pairs=100, seed=100000, name='holdem', full_actions=False):
+def evaluate(a, b, pairs=100, seed=100000, name='holdem', full_actions=False, stack_bb=100):
     if pairs < 2:
         raise ValueError('At least two independent pairs required')
     for policy in (a,b):
@@ -12,7 +12,7 @@ def evaluate(a, b, pairs=100, seed=100000, name='holdem', full_actions=False):
             raise ValueError('Checkpoint game mismatch')
     if full_actions and any(p.data for p in (a,b)):
         raise ValueError("FCPA checkpoints cannot play full-action games")
-    g = game(name, full_actions=full_actions)
+    g = game(name, full_actions=full_actions, stack_bb=stack_bb) if name == 'holdem' else game(name)
     clusters, latencies = [], []
     start = time.perf_counter()
     for pair in range(pairs):

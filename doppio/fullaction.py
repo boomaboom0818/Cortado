@@ -21,7 +21,7 @@ from collections import Counter
 import numpy as np
 from .buckets import strength
 from .cards import DECK, parse_information
-from .game import SPEC, Observation, game
+from .game import SPEC, Observation, game, stack_of
 
 STACK = int(SPEC['stack'].split()[0])
 BLINDS = tuple(int(x) for x in SPEC['blind'].split())  # seat 0 small blind, seat 1 big blind
@@ -55,9 +55,9 @@ def parse_sequence(information):
     return rounds
 
 
-def commitments(information):
+def commitments(information, stack=STACK):
     money = _MONEY.search(information)
-    return [STACK - int(money[1]), STACK - int(money[2])]
+    return [stack - int(money[1]), stack - int(money[2])]
 
 
 def harmonic_probability(low, high, x):
@@ -96,9 +96,11 @@ class FullActionAgent:
         if fallback not in ('heuristic', 'uniform'):
             raise ValueError(fallback)
         self.base, self.fallback = base, fallback
-        self.fcpa = game('holdem')
+        self.stack_bb = (base.data or {}).get('stack_bb', 100)
+        self.fcpa = game('holdem', stack_bb=self.stack_bb)
         self.fcpa_id = str(self.fcpa)
-        self.full_id = str(game('holdem', full_actions=True))
+        self.full_id = str(game('holdem', full_actions=True, stack_bb=self.stack_bb))
+        self.stack = stack_of(self.full_id)
         self.decisions = self.misses = 0
         self.stats, self.latencies = Counter(), []
 
@@ -119,7 +121,7 @@ class FullActionAgent:
         if observation.game_id != self.full_id:
             raise ValueError('FullActionAgent plays only the full-action game')
         me, info, legal = observation.player, observation.information, observation.legal_actions
-        commits = commitments(info)
+        commits = commitments(info, self.stack)
         try:
             state = self._replay(info, me)
         except Desync:
@@ -168,7 +170,7 @@ class FullActionAgent:
                 commits[actor] = max(commits) if kind == 'c' else amount if kind == 'r' else commits[actor]
                 actor ^= 1
             prefix += '|'
-        if commits != commitments(info):
+        if commits != commitments(info, self.stack):
             raise Desync('real commitments inconsistent with observation')
         if state.is_chance_node() or state.is_terminal() or state.current_player() != me:
             raise Desync('abstract replay is not at our decision')
@@ -180,11 +182,11 @@ class FullActionAgent:
             return FOLD if FOLD in legal else CALL
         if kind == 'c':
             return CALL
-        if amount >= STACK:
+        if amount >= self.stack:
             return ALLIN if ALLIN in legal else BET if BET in legal else CALL
         f = pot_fraction(amount, commits, actor)
-        abs_commits = commitments(state.information_state_string(actor))
-        f_all = pot_fraction(STACK, abs_commits, actor)
+        abs_commits = commitments(state.information_state_string(actor), self.stack)
+        f_all = pot_fraction(self.stack, abs_commits, actor)
         high_action, high = (BET, 1.0) if BET in legal else (ALLIN, f_all)
         if ALLIN not in legal and BET not in legal:
             return CALL
@@ -212,7 +214,7 @@ class FullActionAgent:
     def _heuristic(self, observation, legal):
         """Equity-threshold coverage fallback. Not CFR-derived; reported separately."""
         hole, board = parse_information(observation.information)
-        commits = commitments(observation.information)
+        commits = commitments(observation.information, self.stack)
         me = observation.player
         e = strength(hole, board)
         facing = commits[1 - me] - commits[me]

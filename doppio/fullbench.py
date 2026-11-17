@@ -26,10 +26,10 @@ def _task(args):
     base = Policy('checkpoint', checkpoint)
     agent = FullActionAgent(base, fallback=fallback)
     if opponent == 'lbr':
-        report = evaluate(agent, LBR(agent, hands=lbr_hands), pairs, seed, 'holdem', full_actions=True)
+        report = evaluate(agent, LBR(agent, hands=lbr_hands), pairs, seed, 'holdem', full_actions=True, stack_bb=agent.stack_bb)
     else:
         from .pool import PoolPolicy
-        report = evaluate(agent, PoolPolicy(opponent), pairs, seed, 'holdem', full_actions=True)
+        report = evaluate(agent, PoolPolicy(opponent), pairs, seed, 'holdem', full_actions=True, stack_bb=agent.stack_bb)
     report['source_counts'] = dict(agent.stats)
     report['candidate_latencies_ms'] = [x * 1000 for x in agent.latencies]
     report['cpu_seconds'] = time.process_time() - start

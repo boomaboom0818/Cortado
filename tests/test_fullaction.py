@@ -111,3 +111,15 @@ def test_full_action_evaluation_rejects_fcpa_checkpoint(tmp_path):
     train('holdem', 5, 1, path, representation='buckets-v1')
     with pytest.raises(ValueError):
         evaluate(Policy('checkpoint', path), Policy('call'), 2, 1, 'holdem', full_actions=True)
+
+
+def test_configurable_stack_trains_and_plays_full_actions(tmp_path):
+    path = tmp_path / 'deep.json.gz'
+    train('holdem', 60, 4, path, representation='buckets-v1', stack_bb=200)
+    agent = FullActionAgent(Policy('checkpoint', path))
+    assert agent.stack == 400
+    for style in ('tag', 'overbet'):
+        report = evaluate(agent, PoolPolicy(style, samples=16), 5, 9, 'holdem', full_actions=True, stack_bb=200)
+        assert report['hands'] == 10
+    with pytest.raises(ValueError):   # a 100 BB game must reject a 200 BB checkpoint
+        evaluate(agent, PoolPolicy('tag', samples=16), 2, 9, 'holdem', full_actions=True, stack_bb=100)

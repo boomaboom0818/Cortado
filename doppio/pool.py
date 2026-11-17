@@ -10,6 +10,7 @@ from dataclasses import dataclass
 import numpy as np
 from .cards import equity, parse_information
 from .fullaction import commitments
+from .game import stack_of
 
 VERSION = 'pool-v1'
 
@@ -52,7 +53,7 @@ class PoolPolicy:
         st, legal = self.style, observation.legal_actions
         hole, board = parse_information(observation.information)
         me = observation.player
-        commits = commitments(observation.information)
+        commits = commitments(observation.information, stack_of(observation.game_id))
         facing = commits[1 - me] - commits[me]
         pot = commits[0] + commits[1]
         e = equity(hole, board, self.samples, np.random.default_rng(int(rng.integers(2**32))))

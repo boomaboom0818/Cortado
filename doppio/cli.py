@@ -16,6 +16,7 @@ def main():
     p.add_argument('--max-seconds',type=float)
     p.add_argument('--max-rss-mb',type=float)
     p.add_argument('--metrics')
+    p.add_argument('--stack-bb',type=int,default=100)
     p.add_argument('--full-actions',action='store_true',help='Evaluation only; integer-chip raise sizes')
     p.add_argument('--pairs',type=int,default=100)
     p.add_argument('--seed',type=int,default=42)
@@ -31,7 +32,7 @@ def main():
         p.error(str(error))
     if a.full_actions and a.command == "train":
         p.error("Full-action training is not supported; branching is prohibitive")
-    result = train(a.game,a.iterations,a.seed,a.checkpoint,a.resume,a.mode,representation=a.representation,checkpoint_every=a.checkpoint_every,max_seconds=a.max_seconds,max_rss_mb=a.max_rss_mb,metrics_path=a.metrics) if a.command=='train' else evaluate(
+    result = train(a.game,a.iterations,a.seed,a.checkpoint,a.resume,a.mode,representation=a.representation,stack_bb=a.stack_bb,checkpoint_every=a.checkpoint_every,max_seconds=a.max_seconds,max_rss_mb=a.max_rss_mb,metrics_path=a.metrics) if a.command=='train' else evaluate(
         Policy(a.policy,a.checkpoint if a.policy=='checkpoint' else None),
         Policy(a.opponent,a.opponent_checkpoint),a.pairs,a.seed,a.game,a.full_actions)
     result['profile'] = profile.metadata()
