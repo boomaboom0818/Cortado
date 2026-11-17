@@ -1,0 +1,190 @@
+{
+  "schema": 1,
+  "pool_version": "pool-v1",
+  "checkpoint": "runs/buckets-44/latest.json.gz",
+  "seed": 700000,
+  "fallback": "heuristic",
+  "lbr_hands_sampled": 60,
+  "wall_seconds": 55.62485166697297,
+  "units": "bb/100, positive favours the candidate",
+  "opponents": {
+    "nit": {
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": -51.108333333333334,
+      "ci95": [
+        -101.14871298409062,
+        -1.0679536825760536
+      ],
+      "candidate_latency_ms_p50": 1.2707354908343405,
+      "candidate_latency_ms_p95": 2.65711261308752,
+      "candidate_latency_ms_max": 4.027596965897828,
+      "cpu_seconds": 42.438450841,
+      "candidate_decision_sources": {
+        "table": 1.0
+      },
+      "candidate_decisions": 13572
+    },
+    "tag": {
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 35.78333333333333,
+      "ci95": [
+        -32.07340070729683,
+        103.64006737396349
+      ],
+      "candidate_latency_ms_p50": 0.38583698915317655,
+      "candidate_latency_ms_p95": 2.6837918034289032,
+      "candidate_latency_ms_max": 6.374517979566008,
+      "cpu_seconds": 44.104289592,
+      "candidate_decision_sources": {
+        "table": 0.9998667288598654,
+        "desync_heuristic": 0.00013327114013460386
+      },
+      "candidate_decisions": 15007
+    },
+    "lag": {
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 207.48333333333332,
+      "ci95": [
+        122.03086413698824,
+        292.9358025296784
+      ],
+      "candidate_latency_ms_p50": 0.29100850224494934,
+      "candidate_latency_ms_p95": 2.704234517295845,
+      "candidate_latency_ms_max": 4.7952510067261755,
+      "cpu_seconds": 36.536287834999996,
+      "candidate_decision_sources": {
+        "table": 1.0
+      },
+      "candidate_decisions": 14598
+    },
+    "station": {
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 697.9333333333333,
+      "ci95": [
+        596.8840926825059,
+        798.9825739841607
+      ],
+      "candidate_latency_ms_p50": 2.051653485978022,
+      "candidate_latency_ms_p95": 2.6826377114048228,
+      "candidate_latency_ms_max": 4.324485023971647,
+      "cpu_seconds": 55.681124062,
+      "candidate_decision_sources": {
+        "table": 0.9998843930635838,
+        "desync_heuristic": 0.00011560693641618497
+      },
+      "candidate_decisions": 17300
+    },
+    "maniac": {
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 666.95,
+      "ci95": [
+        549.8548064136533,
+        784.0451935863468
+      ],
+      "candidate_latency_ms_p50": 0.18483202438801527,
+      "candidate_latency_ms_p95": 2.6361224881839007,
+      "candidate_latency_ms_max": 4.052598960697651,
+      "cpu_seconds": 21.844948618000004,
+      "candidate_decision_sources": {
+        "table": 1.0
+      },
+      "candidate_decisions": 11091
+    },
+    "min-raiser": {
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 10.416666666666668,
+      "ci95": [
+        -62.81203626802554,
+        83.64536960135888
+      ],
+      "candidate_latency_ms_p50": 0.3247130080126226,
+      "candidate_latency_ms_p95": 2.7511414838954806,
+      "candidate_latency_ms_max": 4.569261975120753,
+      "cpu_seconds": 41.34536142499999,
+      "candidate_decision_sources": {
+        "table": 0.9939369166836978,
+        "desync_heuristic": 0.0060630833163022
+      },
+      "candidate_decisions": 14679
+    },
+    "third-pot": {
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 115.39999999999999,
+      "ci95": [
+        40.91773636265758,
+        189.88226363734242
+      ],
+      "candidate_latency_ms_p50": 0.3142144996672869,
+      "candidate_latency_ms_p95": 2.744523886940442,
+      "candidate_latency_ms_max": 4.276886000297964,
+      "cpu_seconds": 38.169442380999996,
+      "candidate_decision_sources": {
+        "table": 0.9949054833087545,
+        "desync_heuristic": 0.005094516691245475
+      },
+      "candidate_decisions": 14918
+    },
+    "overbet": {
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 190.15,
+      "ci95": [
+        108.28598435001165,
+        272.0140156499884
+      ],
+      "candidate_latency_ms_p50": 0.27542305178940296,
+      "candidate_latency_ms_p95": 2.735554601531476,
+      "candidate_latency_ms_max": 4.246827040333301,
+      "cpu_seconds": 37.714928696,
+      "candidate_decision_sources": {
+        "table": 0.9277408030424925,
+        "desync_heuristic": 0.0722591969575075
+      },
+      "candidate_decisions": 13673
+    },
+    "random-size": {
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 104.56666666666668,
+      "ci95": [
+        24.739479826758313,
+        184.39385350657506
+      ],
+      "candidate_latency_ms_p50": 0.2863369882106781,
+      "candidate_latency_ms_p95": 2.7311878046020865,
+      "candidate_latency_ms_max": 4.29326097946614,
+      "cpu_seconds": 38.17062076799999,
+      "candidate_decision_sources": {
+        "table": 0.9734604306679467,
+        "desync_heuristic": 0.026539569332053217
+      },
+      "candidate_decisions": 14582
+    },
+    "lbr": {
+      "independent_pairs": 300,
+      "hands": 600,
+      "mean_bb_per_100": -35.083333333333336,
+      "ci95": [
+        -235.44779963796825,
+        165.28113297130156
+      ],
+      "candidate_latency_ms_p50": 0.19836099818348885,
+      "candidate_latency_ms_p95": 2.6920850214082748,
+      "candidate_latency_ms_max": 2.8692850028164685,
+      "cpu_seconds": 169.11909224399997,
+      "candidate_decision_sources": {
+        "table": 0.996078431372549,
+        "desync_heuristic": 0.00392156862745098
+      },
+      "candidate_decisions": 1275
+    }
+  },
+  "note": "Development evaluation unless the seed block was pre-registered as final; intervals are per-opponent and not multiplicity-corrected."
+}
