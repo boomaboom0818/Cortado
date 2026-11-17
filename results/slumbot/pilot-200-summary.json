@@ -1,0 +1,40 @@
+{
+  "log": "results/slumbot/pilot-200.jsonl",
+  "checkpoint": "runs/buckets200-42/iteration-154840.json.gz",
+  "checkpoint_sha256": "cc8b60340d77ffd67740687f46b210b04b8d16984e9c4e9aeae100c566529c93",
+  "hands": 200,
+  "mean_bb_per_100": -242.25,
+  "ci95": [
+    -595.6000618868236,
+    111.1000618868236
+  ],
+  "sources": {
+    "table": 404
+  },
+  "protocol_stats": {
+    "rounded_opponent_bets": 0
+  },
+  "baseline_keys": [
+    "action",
+    "baseline_winnings",
+    "board",
+    "bot_hole_cards",
+    "client_pos",
+    "hole_cards",
+    "old_action",
+    "session_baseline_total",
+    "session_num_hands",
+    "session_total",
+    "winnings",
+    "won_pot"
+  ],
+  "wall_seconds": 285.16665737802396,
+  "note": "Independent hands, unpaired; Slumbot is not a duplicate-match opponent.",
+  "baseline_adjusted_bb_per_100": 31.5,
+  "baseline_adjusted_ci95": [
+    -350.95723824181806,
+    413.95723824181806
+  ],
+  "engine_checks_ok": 200,
+  "engine_checks_total": 200
+}
