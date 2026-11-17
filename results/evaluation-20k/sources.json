@@ -1,0 +1,16 @@
+{
+  "42": {
+    "path": "runs/cpu-pilot/seed-42/iteration-20000.json.gz",
+    "sha256": "7b264bed45582f517a76c9155d1f3b9740294eed4b8c0dbcab74e2a49ce288d8",
+    "iterations": 20000
+  },
+  "43": {
+    "path": "runs/cpu-pilot/seed-43/iteration-20000.json.gz",
+    "sha256": "eb9ea1467ef6ef3dee079b82331fa31dfcd749a4f1b658e82925e3dbb57f75d5",
+    "iterations": 20000
+  },
+  "historical": {
+    "path": "results/holdem-10k.json.gz",
+    "sha256": "211048a0ed619e9dd4a99ab8c68ecd1e264f417f0452226994e13cf554b81842"
+  }
+}
