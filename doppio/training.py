@@ -18,6 +18,13 @@ from .profiles import active_profile
 from .abstraction import AbstractGame, REPRESENTATIONS
 
 
+def _digest(representation):
+    if representation != 'buckets-v1':
+        return None
+    from .buckets import edge_digest
+    return edge_digest()
+
+
 def train(name, iterations, seed, path, resume=None, target='bot', *,
           representation=None, checkpoint_every=1000, max_seconds=None,
           max_rss_mb=None, metrics_path=None):
@@ -33,6 +40,8 @@ def train(name, iterations, seed, path, resume=None, target='bot', *,
         raise ValueError('Invalid representation for game')
     if previous and representation != inherited:
         raise ValueError('Cannot change representation on resume')
+    if previous and previous.get('abstraction_digest') != _digest(representation):
+        raise ValueError('Bucket edges changed since the checkpoint was written')
     if previous and (previous['schema'] not in (2,3) or previous.get('profile',{}).get('target','bot') != target):
         raise ValueError('Incompatible resume checkpoint')
     if previous and previous['schema'] == 3:
@@ -93,7 +102,7 @@ def train(name, iterations, seed, path, resume=None, target='bot', *,
         rng = np.random.get_state()
         report = dict(schema=3, algorithm='external_sampling_mccfr',game=name,
                       engine=ENGINE,specification=SPEC if name=='holdem' else {},
-                      representation=representation,profile=profile.metadata(),
+                      representation=representation,abstraction_digest=_digest(representation),profile=profile.metadata(),
                       storage='sqlite' if disk_path else 'memory',
                       table_bytes=Path(disk_path).stat().st_size if disk_path else None,
                       iterations=completed,seed=seed,seconds=base_seconds+time.perf_counter()-start,

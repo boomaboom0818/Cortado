@@ -43,4 +43,4 @@ def evaluate(a, b, pairs=100, seed=100000, name='holdem', full_actions=False):
                 ci95=[mean-half,mean+half], latency_ms_p50=float(np.median(latencies)*1000),
                 latency_ms_p95=float(np.quantile(latencies,.95)*1000),
                 wall_seconds=time.perf_counter()-start, decisions=[a.decisions,b.decisions], checkpoint_misses=[a.misses,b.misses],
-                cost='Local CPU; monetary cost not metered')
+                cost='Local CPU; monetary cost not metered', clusters=[float(c) for c in clusters])

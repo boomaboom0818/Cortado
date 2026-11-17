@@ -15,7 +15,7 @@ def canonical_information(information):
                       lambda m:m[1]+mapping[m[2]],information)
     return min(candidate(order) for order in permutations(SUITS))
 
-REPRESENTATIONS = ('exact-v1', 'suits-v1')
+REPRESENTATIONS = ('exact-v1', 'suits-v1', 'buckets-v1')
 
 def information_key(information, actions, representation='exact-v1'):
     if representation not in REPRESENTATIONS:
@@ -23,6 +23,9 @@ def information_key(information, actions, representation='exact-v1'):
     if representation == 'exact-v1':
         return information
     # Include ordered action IDs so merged keys cannot silently change semantics.
+    if representation == 'buckets-v1':
+        from .buckets import bucket_information
+        return bucket_information(information) + '|actions:' + ','.join(map(str,actions))
     return canonical_information(information) + '|actions:' + ','.join(map(str,actions))
 
 class AbstractState:
