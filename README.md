@@ -167,3 +167,23 @@ The requested 30-minute checks are scheduled through T3 separately from the Pyth
 Use the bounded CPU campaign in [TRAINING_READINESS.md](TRAINING_READINESS.md). It replaces the RAM-growing path for new long runs while retaining the existing checkpoints and exact training algorithm. The new optional run-config field `storage: "sqlite"` selects self-contained `latest.sqlite` and iteration snapshots; omit it for legacy JSON/in-memory behavior. Training and policy inference both support this format. Each worker uses a bounded row cache and its own working database. The campaign performs development evaluation between training batches and stops on resource failures instead of automatically restarting them.
 
 `configs/train-disk.json` provides two-worker-compatible limits for this host. `doppio.campaign` is capped at four cycles; use the documented command and a fresh run directory. Do not substitute `.sqlite` filenames with gzip files or move active working databases between workers. The 1 GiB soft memory guard now uses live Linux RSS, with sampled peak and inherited OS high-water reported separately.
+
+
+## Strength gates: coverage, full-action play, adversaries, external benchmark
+
+This section supersedes older statements above about uniform fallback and the FCPA-only public API.
+
+- **Card abstraction (`abstraction.py`, `buckets.py`, `cards.py`)**: `buckets-v1` keeps 169 lossless preflop classes and replaces postflop cards with 30 equity buckets per street (equity vs a random hand, deterministic seeded Monte Carlo, versioned edges in `doppio/data/buckets-v1.json`, digest checked at load). `buckets-v2` adds a public board-texture class (flush potential x paired board). Imperfect recall: earlier postflop buckets are forgotten. The table drops from billions of potential keys to about 43.5k (v1), so trained-table coverage is about 100% instead of about 47%.
+- **Full-action play (`fullaction.py`)**: `FullActionAgent` plays any FCPA checkpoint in the unrestricted game. Opponent bet sizes are mapped by pseudo-harmonic translation (seeded per own cards and public prefix); our abstract choices map to concrete legal chip amounts. Stateless and isolated: it rebuilds an abstract replay from the observation with dummy opponent cards. Known limits: translation is not subgame solving; real and abstract pots drift; mapped all-ins can desynchronise the replay, after which an equity heuristic plays (counted as `desync_heuristic`).
+- **Configurable stacks**: `--stack-bb` / `stack_bb` in training configs, recorded in checkpoints and enforced at evaluation.
+- **Opponents (`pool.py`, `lbr.py`)**: `pool-v1` is nine frozen diagnostic scripts (nit, tag, lag, station, maniac, min-raiser, third-pot, overbet, random-size) with real-chip sizing. `LBR` is a Local Best Response adversary using the candidate's exact strategy. Neither is an independent strong agent.
+- **Benchmark (`fullbench.py`)**: parallel paired-deal blocks, per-opponent t-intervals, candidate-only latency, decision-source fractions, and optional `--aivat`.
+- **Variance reduction (`aivat.py`)**: chance-event and own-action control variates. Unbiasedness checked exactly for chance terms (unit test) and empirically: on 8,000 paired deals, mean correction -18.8 bb/100, SE 18.1. Variance ratio about 0.39 against `tag`, so about 2.6x fewer deals are needed for the same interval. Weights were tuned on one seed range and validated on another.
+- **Slumbot (`slumbot.py`)**: client for the hosted 200 BB API (wire format from Slumbot's published `sample_api.py`). It replays every finished hand in our engine with Slumbot's revealed cards and checks the payoff, and it reports Slumbot's `baseline_winnings`-adjusted estimate.
+
+```sh
+.venv/bin/python -m doppio.fullbench runs/buckets-42/latest.json.gz --pairs 3000 --lbr-pairs 300 --aivat --seed 700000 --out dev.json
+.venv/bin/python -m doppio.slumbot runs/buckets200-42/latest.json.gz --hands 200 --log slumbot.jsonl   # contacts slumbot.com
+```
+
+Results and their limits are in `results/strength-gates/REPORT.md`, `results/slumbot/` and `EVALUATION_PROTOCOL.md`. Competitive strength remains unproven.

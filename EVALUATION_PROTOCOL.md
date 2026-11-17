@@ -10,10 +10,10 @@ be reported as final evidence.
 |---|---|---|
 | G1 Unrestricted sizes | Candidate plays the full-action game through `FullActionAgent`; zero illegal actions in fuzzing; desync/fallback rate reported per opponent; sizing-probe opponents and LBR included | Implemented; results in `results/strength-gates/` |
 | G2 Coverage | Fraction of decisions answered from the trained table (not a fallback) reported per opponent | Implemented |
-| G3 Independent opponents | At least one externally maintained, independently trained agent at matching stack/blinds/rake | **Not met.** See "External opponents" |
+| G3 Independent opponents | At least one externally maintained, independently trained agent at matching stack/blinds/rake | Slumbot client working (200 BB); 200-hand pilot only, inconclusive |
 | G4 Frozen test | Candidate checkpoint hash, adapter version, opponent versions, seed block, pair count and acceptance threshold written down before the run | Template below |
 | G5 Adversarial search | LBR (implemented) plus trained best-response agents against the frozen candidate on fresh deals | LBR only |
-| G6 Variance | AIVAT or equivalent so the required sample is feasible | Not implemented |
+| G6 Variance | AIVAT or equivalent so the required sample is feasible | Local AIVAT (variance ratio ~0.39); Slumbot baseline adjustment available |
 
 ## Seed blocks
 
@@ -40,13 +40,11 @@ w bb/100 needs about (1.96 * 27 / (w/100))^2 deals: w = 20 needs about 70,000 de
 1.1 million. Plan sample sizes from the pilot standard deviation of the actual matchup, and expect to
 need variance reduction (G6) for tight bounds.
 
-## External opponents (what exists, what blocks us)
+## External opponents
 
-All publicly reachable strong HUNL benchmarks found play 200 big blinds (blinds 50/100, 20,000 chips):
-Slumbot (hosted API; source at github.com/ericgjackson/slumbot2019 under MIT but its competition strategy
-files are not in the repository), the GTO Wizard benchmark service, and OpenHoldem-hosted baselines.
-The pipeline therefore now supports `stack_bb` end to end (training, checkpoints, adapter, LBR, pool), so
-a 200 BB candidate can be trained and tested at matching stacks. Remaining blockers: a client for the
-hosted API (needs the exact wire format verified against the provider's current documentation, and
-permission to send hands to a third-party service), and checking each service's usage terms and rake/ante
-settings. No hosted opponent has been contacted.
+All publicly reachable strong HUNL benchmarks found play 200 big blinds: Slumbot, the GTO Wizard benchmark
+service, and OpenHoldem-hosted baselines. `doppio/slumbot.py` plays Slumbot through its public API (no login
+required; anonymous sessions do not appear on leaderboards). Every finished hand is replayed in our engine
+with Slumbot's revealed cards; all 200 pilot hands matched. Slumbot is not a duplicate opponent: hands are
+independent and unpaired, but the API returns `baseline_winnings` (Slumbot playing our seat with the same
+cards), which gives an unbiased lower-variance difference estimator. Be polite with request volume.
