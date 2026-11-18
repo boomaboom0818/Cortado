@@ -45,23 +45,27 @@ def showdown_value(hole, opp, board):
     return 1.0 if mine < theirs else 0.5 if mine == theirs else 0.0
 
 
+_ID = {card: index for index, card in enumerate(DECK)}  # phevaluator integer ids use the same order
+
+
 def equity(hole, board, samples=128, rng=None):
     """Monte Carlo equity against a uniformly random opponent hand and random runout."""
     rng = rng or np.random.default_rng(0)
     known = set(hole) | set(board)
-    rest = [c for c in DECK if c not in known]
+    rest = [_ID[c] for c in DECK if c not in known]
     need = 5 - len(board)
     draws = np.argsort(rng.random((samples, len(rest))), axis=1)[:, :2 + need]
-    board = tuple(board)
+    hole_ids = [_ID[c] for c in hole]
+    board_ids = tuple(_ID[c] for c in board)
     mine_cache = {}
     total = 0.0
     for row in draws:
         cards = [rest[i] for i in row]
-        full = board + tuple(cards[2:])
+        full = board_ids + tuple(cards[2:])
         mine = mine_cache.get(full)
         if mine is None:
-            mine = mine_cache[full] = evaluate_cards(*hole, *full)
-        theirs = evaluate_cards(*cards[:2], *full)
+            mine = mine_cache[full] = evaluate_cards(*hole_ids, *full)
+        theirs = evaluate_cards(cards[0], cards[1], *full)
         total += 1.0 if mine < theirs else 0.5 if mine == theirs else 0.0
     return total / samples
 

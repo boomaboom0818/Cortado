@@ -56,7 +56,7 @@ class FakeSlumbot:
 
     def _apply(self, incr):
         info = self.state.information_state_string(self.state.current_player())
-        from doppio.slumbot import street_base
+        from doppio.fullaction import street_base
         if incr[0] == 'b':
             move = street_base(info) + int(incr[1:]) // SCALE
         else:

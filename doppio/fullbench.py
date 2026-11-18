@@ -21,10 +21,14 @@ OPPONENTS = tuple(STYLES) + ('lbr',)
 
 
 def _task(args):
-    checkpoint, opponent, pairs, seed, lbr_hands, fallback, aivat = args
+    checkpoint, opponent, pairs, seed, lbr_hands, fallback, aivat, kind = args
     start = time.process_time()
     base = Policy('checkpoint', checkpoint)
-    agent = FullActionAgent(base, fallback=fallback)
+    if kind == 'resolve':
+        from .resolve import ResolvingAgent
+        agent = ResolvingAgent(base, fallback=fallback)
+    else:
+        agent = FullActionAgent(base, fallback=fallback)
     if opponent == 'lbr':
         report = evaluate(agent, LBR(agent, hands=lbr_hands), pairs, seed, 'holdem', full_actions=True, stack_bb=agent.stack_bb, aivat=aivat)
     else:
@@ -51,7 +55,7 @@ def _combine(reports):
         adjusted = np.array([c for r in reports for c in r['aivat_clusters']])
         m = float(adjusted.mean() * 100)
         h = float(t.ppf(.975, n - 1) * adjusted.std(ddof=1) / np.sqrt(n) * 100)
-        extra = dict(aivat_mean_bb_per_100=m, aivat_ci95=[m - h, m + h],
+        extra = dict(aivat_clusters=[float(c) for c in adjusted], aivat_mean_bb_per_100=m, aivat_ci95=[m - h, m + h],
                      aivat_variance_ratio=float(adjusted.var(ddof=1) / clusters.var(ddof=1)))
     return dict(**extra, independent_pairs=n, hands=2 * n, mean_bb_per_100=mean, ci95=[mean - half, mean + half],
                 candidate_latency_ms_p50=float(np.quantile(latencies, .5)),
@@ -62,20 +66,20 @@ def _combine(reports):
                 candidate_decisions=decisions)
 
 
-def run(checkpoint, *, pairs, seed, workers, blocks, lbr_pairs, lbr_hands, fallback='heuristic', opponents=OPPONENTS, aivat=None):
+def run(checkpoint, *, pairs, seed, workers, blocks, lbr_pairs, lbr_hands, fallback='heuristic', opponents=OPPONENTS, aivat=None, agent='blueprint'):
     jobs = []
     for index, opponent in enumerate(opponents):
         total = lbr_pairs if opponent == 'lbr' else pairs
         per = max(2, total // blocks)
         for block in range(blocks):
-            jobs.append((checkpoint, opponent, per, seed + index * 1_000_000 + block * 1000, lbr_hands, fallback, aivat))
+            jobs.append((checkpoint, opponent, per, seed + index * 1_000_000 + block * 1000, lbr_hands, fallback, aivat, agent))
     start = time.perf_counter()
     grouped = {}
     with ProcessPoolExecutor(workers) as pool:
         for opponent, report in pool.map(_task, jobs):
             grouped.setdefault(opponent, []).append(report)
     return dict(schema=1, pool_version=VERSION, checkpoint=str(checkpoint), seed=seed, fallback=fallback,
-                lbr_hands_sampled=lbr_hands, aivat_weights=aivat, wall_seconds=time.perf_counter() - start,
+                lbr_hands_sampled=lbr_hands, aivat_weights=aivat, agent=agent, wall_seconds=time.perf_counter() - start,
                 units='bb/100, positive favours the candidate',
                 opponents={o: _combine(r) for o, r in grouped.items()},
                 note='Development evaluation unless the seed block was pre-registered as final; '
@@ -94,11 +98,12 @@ def main():
     p.add_argument('--fallback', choices=['heuristic', 'uniform'], default='heuristic')
     p.add_argument('--opponents', nargs='+', default=list(OPPONENTS))
     p.add_argument('--aivat', action='store_true', help='Also report AIVAT-corrected estimates (weights 1,1,1,1)')
+    p.add_argument('--agent', choices=['blueprint', 'resolve'], default='blueprint')
     p.add_argument('--out')
     args = p.parse_args()
     report = run(args.checkpoint, pairs=args.pairs, seed=args.seed, workers=args.workers, blocks=args.blocks,
                  lbr_pairs=args.lbr_pairs, lbr_hands=args.lbr_hands, fallback=args.fallback, opponents=args.opponents,
-                 aivat=(1.0, 1.0, 1.0, 1.0) if args.aivat else None)
+                 aivat=(1.0, 1.0, 1.0, 1.0) if args.aivat else None, agent=args.agent)
     text = json.dumps(report, indent=2)
     if args.out:
         open(args.out, 'w').write(text + '\n')

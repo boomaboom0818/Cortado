@@ -86,6 +86,22 @@ def to_real(action, legal, commits, me):
     return int(min(max(target, min(raises)), max(raises)))
 
 
+def street_base(info):
+    """Commitment each player had when the current street began (equal for both players)."""
+    commits = list(BLINDS)
+    rounds = parse_sequence(info)
+    for index, actions in enumerate(rounds[:-1]):
+        actor = 0 if index == 0 else 1
+        for kind, amount, _ in actions:
+            commits[actor] = max(commits) if kind == 'c' else amount if kind == 'r' else commits[actor]
+            actor ^= 1
+    if len(rounds) == 1:
+        return 0
+    if commits[0] != commits[1]:
+        raise Desync('Street started with unequal commitments')
+    return commits[0]
+
+
 class FullActionAgent:
     """Policy-compatible wrapper. `data` is None so evaluation treats it as a full-action policy."""
     data = None
@@ -110,7 +126,7 @@ class FullActionAgent:
         actions, probabilities, source = self.distribution(observation)
         self.latencies.append(time.perf_counter() - tick)
         self.stats[source] += 1
-        self.misses += source != 'table'
+        self.misses += source not in ('table', 'resolve')
         return int(rng.choice(actions, p=probabilities))
 
     def distribution(self, observation):
@@ -144,7 +160,7 @@ class FullActionAgent:
         return actions, np.array([real[a] for a in actions]), source
 
     # -- translation of public history into the abstract game ---------------------------
-    def _replay(self, info, me):
+    def _replay(self, info, me, trace=None):
         hole, board = parse_information(info)
         rounds = parse_sequence(info)
         used = set(hole) | set(board)
@@ -166,6 +182,8 @@ class FullActionAgent:
                     raise Desync('abstract turn order differs')
                 prefix += text
                 abstract = self._to_abstract(state, kind, amount, commits, actor, hole, board, prefix)
+                if trace is not None:
+                    trace.append((index, actor, state.information_state_string(actor), tuple(state.legal_actions()), abstract))
                 state.apply_action(abstract)
                 commits[actor] = max(commits) if kind == 'c' else amount if kind == 'r' else commits[actor]
                 actor ^= 1

@@ -21,7 +21,7 @@ import urllib.request
 from pathlib import Path
 import numpy as np
 from .cards import DECK
-from .fullaction import BLINDS, FullActionAgent, commitments, parse_sequence
+from .fullaction import FullActionAgent, commitments, street_base
 from .game import game, observe, stack_of
 from .policies import Policy
 
@@ -101,22 +101,6 @@ def replay(full_game, our_seat, hole, board, action, stats=None):
     if stats is not None:
         stats['rounded_opponent_bets'] = stats.get('rounded_opponent_bets', 0) + rounded
     return state
-
-
-def street_base(info):
-    """Commitment each player had when the current street began (equal for both players)."""
-    commits = list(BLINDS)
-    rounds = parse_sequence(info)
-    for index, actions in enumerate(rounds[:-1]):
-        actor = 0 if index == 0 else 1
-        for kind, amount, _ in actions:
-            commits[actor] = max(commits) if kind == 'c' else amount if kind == 'r' else commits[actor]
-            actor ^= 1
-    if len(rounds) == 1:
-        return 0
-    if commits[0] != commits[1]:
-        raise ProtocolError('Street started with unequal commitments')
-    return commits[0]
 
 
 def to_incr(state, move):
