@@ -1,0 +1,7 @@
+2026-11-18T10:20:35-08:00 start attempt=0 seed=20 logged=0
+2026-11-18T11:32:33-08:00 crashed attempt=0 exit=1 logged=2525
+2026-11-18T11:34:33-08:00 start attempt=1 seed=21 logged=2525
+2026-11-18T11:51:55-08:00 crashed attempt=1 exit=1 logged=2591
+2026-11-18T11:53:55-08:00 start attempt=2 seed=22 logged=2591
+2026-11-18T12:12:08-08:00 PAUSED manually: Slumbot server degraded (resets/timeouts/HTTP 500 since ~11:30; 64 abandoned in hands 2511-2682). Results not inspected. logged=2683
+2026-11-18T12:15:16-08:00 TERMINATED by user decision (before any result was inspected); Slumbot test 2 ends at 2683 logged hands

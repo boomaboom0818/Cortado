@@ -37,3 +37,15 @@ and the adjusted estimate is near zero.
 The adjusted standard deviation per hand is about 14 BB. A ±20 bb/100 interval needs roughly 20,000 hands;
 ±10 needs about 79,000. At the observed ~2.2 s per hand (including the 0.25 s politeness delay), 20,000 hands
 is about 12 hours of sequential requests. Ask before running that volume against a free service.
+
+## Test 2 (shortened; terminated by user decision before any result was inspected)
+
+Pre-registered as 20,000 hands for candidate B (`iteration-1348732`). Stopped at 2,683 logged hands (2,619 scored, 64 abandoned).
+* Hands 1-2,500 ran cleanly. From about 11:30 on 2026-11-18 the server returned connection resets, timeouts and HTTP 500s;
+  64 of the next 183 hands were lost mid-hand, and the client crashed twice (it restarted in the same log with action seeds 21, 22).
+  The run was paused at 12:12 because abandonment was running far above the rate seen earlier and long hands are more likely to be lost.
+  It was then terminated by the user's decision, made before any win rate was looked at.
+* **Primary: baseline-adjusted -31.9 bb/100, 95% CI [-100.4, +36.6]** (2,619 hands). Raw -42.3 [-117.4, +32.9].
+  Abandoned counted as 0: -31.2 [-98.0, +35.7]. First 2,500 clean hands only: -23.8 [-94.7, +47.2]. Engine payoff checks 2,619 / 2,619 exact.
+* **Outcome under the pre-registered rule: inconclusive.** The interval contains zero and the sample is 13% of the planned size, so no claim
+  either way. At about 14 BB per-hand standard deviation, resolving +-20 bb/100 would need about 20,000 hands.

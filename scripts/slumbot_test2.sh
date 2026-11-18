@@ -8,7 +8,9 @@ CKPT=runs/buckets200-42/iteration-1348732.json.gz
 LOG=results/slumbot/test2-20000.jsonl
 RESTARTS=results/slumbot/test2-restarts.log
 MAX_RESTARTS=10
-for attempt in $(seq 0 "$MAX_RESTARTS"); do
+# Resuming after a pause continues the attempt (and seed) numbering instead of reusing seeds.
+FIRST=$( [ -f "$RESTARTS" ] && grep -c ' start attempt=' "$RESTARTS" || echo 0)
+for attempt in $(seq "$FIRST" "$MAX_RESTARTS"); do
   seed=$((20 + attempt))
   echo "$(date -Is) start attempt=$attempt seed=$seed logged=$( [ -f "$LOG" ] && wc -l < "$LOG" || echo 0)" >> "$RESTARTS"
   .venv/bin/python -m doppio.slumbot "$CKPT" --hands 20000 --seed "$seed" --log "$LOG" --resume \
