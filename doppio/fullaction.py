@@ -177,6 +177,8 @@ class FullActionAgent:
                 for card in (board[:3] if index == 1 else board[index + 1:index + 2]):
                     state.apply_action(DECK.index(card))
             actor = 0 if index == 0 else 1
+            if trace is not None and index == 3:
+                trace.append(('river_start', state.clone()))
             for kind, amount, text in actions:
                 if state.is_chance_node() or state.is_terminal() or state.current_player() != actor:
                     raise Desync('abstract turn order differs')

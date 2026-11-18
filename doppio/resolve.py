@@ -124,7 +124,9 @@ class Showdown:
 
 
 class RiverSolver:
-    def __init__(self, board, hands, reach, commits, stack, first=1, forced=(), iterations=300, **sizes):
+    def __init__(self, board, hands, reach, commits, stack, first=1, forced=(), iterations=300, gadget=None, **sizes):
+        """`gadget=(player, values)`: safe re-solving. `player` may terminate at the root with each hand's
+        blueprint value (chips, normalised per hand), so no range estimate of that player is trusted."""
         self.board, self.hands = board, hands
         self.reach = [np.asarray(r, float) for r in reach]
         self.root = build_tree(commits, stack, first, forced=forced, **sizes)
@@ -132,6 +134,14 @@ class RiverSolver:
         self.ranks = ranks
         self._fast = (Showdown(hands[0], ranks[0], hands[1], ranks[1]),
                       Showdown(hands[1], ranks[1], hands[0], ranks[0]))
+        self.subgame = self.root
+        if gadget is not None:
+            who, values = gadget
+            self.gadget_values = np.asarray(values, float)
+            top = Node(who, commits)
+            top.actions = ['T', 'F']
+            top.children = [Node(terminal=('gadget', who), commits=commits), self.root]
+            self.root = top
         self._init(self.root)
         for t in range(1, iterations + 1):
             for p in (0, 1):
@@ -164,6 +174,11 @@ class RiverSolver:
 
     def _terminal(self, node, p, opp_reach):
         c = node.commits
+        if node.terminal[0] == 'gadget':
+            who = node.terminal[1]
+            if p == who:
+                return self.gadget_values * self._fast[p].evaluate(opp_reach)[1]
+            return -self._fast[p].evaluate(opp_reach * self.gadget_values)[1]
         if node.terminal[0] == 'fold':
             folder = node.terminal[1]
             amount = c[folder] if folder == p else c[1 - p]
@@ -213,7 +228,7 @@ class RiverSolver:
         return float((v0 + v1) / 2 / mass)
 
     def strategy_at(self, path, player, hand):
-        node = self.root
+        node = self.subgame
         for action in path:
             node = node.children[node.actions.index(action)]
         if node.terminal or node.player != player:
@@ -228,9 +243,9 @@ _PRE_RIVER = re.compile(r'\[Sequences: (?:[^|\]]*\|){3}')
 class ResolvingAgent(FullActionAgent):
     """Blueprint + translation before the river; CFR+ re-solve on the river."""
 
-    def __init__(self, base, iterations=300, min_reach=1e-4, **kw):
+    def __init__(self, base, iterations=300, min_reach=1e-4, safe=True, **kw):
         super().__init__(base, **kw)
-        self.iterations, self.min_reach = iterations, min_reach
+        self.iterations, self.min_reach, self.safe = iterations, min_reach, safe
         self._range_cache, self._decision_cache = {}, {}
 
     def distribution(self, observation):
@@ -256,16 +271,20 @@ class ResolvingAgent(FullActionAgent):
         keep = probabilities > 0
         return [a for a, k in zip(actions, keep) if k], probabilities[keep] / probabilities[keep].sum(), 'resolve'
 
-    def _ranges(self, info, me, hole, board):
+    def _ranges(self, info, me, hole, board, players=(0, 1)):
         trace = []
         self._replay(info, me, trace)
+        self._river_start = next((e[1] for e in trace if e[0] == 'river_start'), None)
         rep = self.base.data.get('representation', 'exact-v1')
         everything = [h for h in combinations(DECK, 2) if not set(h) & set(board)]
         ranges = []
-        for player in (0, 1):
+        for player in players:
             hands = everything if player == me else [h for h in everything if not set(h) & set(hole)]
             weights = np.ones(len(hands))
-            for street, actor, text, legal, action in trace:
+            for entry in trace:
+                if entry[0] == 'river_start':
+                    continue
+                street, actor, text, legal, action = entry
                 if actor != player or street == 3:
                     continue
                 shown = board[:0 if street == 0 else street + 2]
@@ -288,23 +307,86 @@ class ResolvingAgent(FullActionAgent):
             ranges.append(([h for h, k in zip(hands, keep) if k], weights[keep]))
         return ranges
 
+    def _prepare(self, info, me, hole, board, base):
+        if not self.safe:
+            (h0, w0), (h1, w1) = self._ranges(info, me, hole, board)
+            return [h0, h1], [w0, w1], None
+        [(mine, weights)] = self._ranges(info, me, hole, board, players=(me,))
+        opp = 1 - me
+        theirs = [h for h in combinations(DECK, 2) if not set(h) & set(board)]
+        values = self._blueprint_values(board, me, mine, weights, theirs, base)
+        hands = [None, None]; reach = [None, None]
+        hands[me], hands[opp] = mine, theirs
+        reach[me], reach[opp] = weights, np.ones(len(theirs))
+        return hands, reach, (opp, values)
+
+    def _blueprint_values(self, board, me, mine, weights, theirs, base):
+        """Per-hand expected value (real chips, whole hand) of each opponent hand against our range when
+        both follow the blueprint's abstract river strategy. Abstract chips are rescaled to the real pot."""
+        start = self._river_start
+        if start is None:
+            raise Desync('no abstract river start')
+        opp = 1 - me
+        rep = self.base.data.get('representation', 'exact-v1')
+        table = self.base.data['table']
+        ranks_t = np.array([evaluate_cards(*h, *board) for h in theirs])
+        ranks_m = np.array([evaluate_cards(*h, *board) for h in mine])
+        show = Showdown(theirs, ranks_t, mine, ranks_m)
+        own = {me: mine, opp: theirs}
+
+        def strategy(state, player):
+            text = state.information_state_string(player)
+            legal = tuple(state.legal_actions())
+            rows = np.empty((len(own[player]), len(legal)))
+            for i, h in enumerate(own[player]):
+                row = table.get(information_key(_PRIVATE.sub(f'[Private: {h[0]}{h[1]}]', text), legal, rep))
+                avg = np.asarray(row[1], float) if row is not None else np.ones(len(legal))
+                rows[i] = avg / avg.sum() if avg.sum() > 0 else 1.0 / len(legal)
+            return legal, rows
+
+        def value(state, q, commits, folder):
+            if folder is not None:
+                diff, mass = show.evaluate(q)
+                return (-commits[opp] if folder == opp else commits[me]) * mass
+            if state.is_terminal() or state.is_chance_node():
+                diff, _ = show.evaluate(q)
+                return commits[opp] * diff
+            player = state.current_player()
+            legal, rows = strategy(state, player)
+            total = 0.0
+            for k, action in enumerate(legal):
+                child = state.child(action)
+                if action == FOLD:
+                    sub_value = value(child, q * rows[:, k] if player == me else q, commits, player)
+                else:
+                    nc = commitments(child.information_state_string(0), self.stack) if not child.is_terminal() else [max(commits)] * 2
+                    sub_value = value(child, q * rows[:, k] if player == me else q, nc, None)
+                total = total + (sub_value if player == me else rows[:, k] * sub_value)
+            return total
+
+        abstract_commits = commitments(start.information_state_string(0), self.stack)
+        cfv = value(start, np.asarray(weights, float), abstract_commits, None)
+        mass = show.evaluate(np.asarray(weights, float))[1]
+        per_hand = np.where(mass > 0, cfv / np.where(mass > 0, mass, 1), 0.0)
+        return per_hand * (base / abstract_commits[0])
+
     def _resolve(self, observation):
         info, me = observation.information, observation.player
         hole, board = parse_information(info)
         hole = tuple(sorted(hole, key=DECK.index))
         river_start = info[:info.index('[Sequences: ')] + _PRE_RIVER.search(info)[0] + str(me)
         river_start = re.sub(r'\[Pot: \d+\]\[Money: \d+ \d+\]', '', river_start)
-        if river_start not in self._range_cache:
-            if len(self._range_cache) > 16:
-                self._range_cache.clear()
-            self._range_cache[river_start] = self._ranges(info, me, hole, board)
-        (h0, w0), (h1, w1) = self._range_cache[river_start]
         base = street_base(info)
         forced = []
         for kind, amount, _ in parse_sequence(info)[3]:
             forced.append(CALL if kind == 'c' else amount)
-        solver = RiverSolver(board, [h0, h1], [w0, w1], (base, base), self.stack, first=1,
-                             forced=tuple(forced), iterations=self.iterations)
+        if river_start not in self._range_cache:
+            if len(self._range_cache) > 16:
+                self._range_cache.clear()
+            self._range_cache[river_start] = self._prepare(info, me, hole, board, base)
+        hands, reach, gadget = self._range_cache[river_start]
+        solver = RiverSolver(board, hands, reach, (base, base), self.stack, first=1,
+                             forced=tuple(forced), iterations=self.iterations, gadget=gadget)
         actions, probabilities = solver.strategy_at(forced, me, hole)
         self.last_solver = solver
         return actions, np.asarray(probabilities, float)
