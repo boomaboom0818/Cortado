@@ -113,8 +113,10 @@ class FullActionAgent:
             raise ValueError(fallback)
         self.base, self.fallback = base, fallback
         self.stack_bb = (base.data or {}).get('stack_bb', 100)
-        self.fcpa = game('holdem', stack_bb=self.stack_bb)
-        self.fcpa_id = str(self.fcpa)
+        self.betting = (base.data or {}).get('betting', 'fcpa')
+        # The abstract game the table was trained on: FCPA, or a bet-size scheme over the full game.
+        self.fcpa = game('holdem', stack_bb=self.stack_bb, betting=self.betting)
+        self.fcpa_id = str(getattr(self.fcpa, 'game', self.fcpa))
         self.full_id = str(game('holdem', full_actions=True, stack_bb=self.stack_bb))
         self.stack = stack_of(self.full_id)
         self.decisions = self.misses = 0
@@ -151,8 +153,12 @@ class FullActionAgent:
             else:
                 source, mixture = 'heuristic_miss', {self._heuristic(observation, legal): 1.0}
         real = {}
+        from_table = source in ('table', 'uniform_miss') and self.betting != 'fcpa'
         for abstract_action, weight in mixture.items():
-            action = to_real(abstract_action, legal, commits, me)
+            if from_table:
+                action = self._scheme_to_real(abstract_action, state, legal, commits, me)
+            else:
+                action = to_real(abstract_action, legal, commits, me)
             real[action] = real.get(action, 0.0) + float(weight)
         if not set(real) <= set(legal):
             raise AssertionError('Adapter produced an illegal action')
@@ -196,7 +202,52 @@ class FullActionAgent:
             raise Desync('abstract replay is not at our decision')
         return state
 
+    def _scheme_to_real(self, action, state, legal, commits, me):
+        """Real legal action with the same pot fraction as an abstract bet-size-scheme action."""
+        raises = [a for a in legal if a >= 2]
+        if action < 2 or not raises:
+            return action if action in legal else 1
+        if action >= self.stack:
+            return max(raises)
+        fraction = pot_fraction(action, list(state.commits), me)
+        target = int(round(commits[1 - me] + fraction * 2 * commits[1 - me]))
+        return int(min(max(target, min(raises)), max(raises)))
+
+    def _scheme_to_abstract(self, state, kind, amount, commits, actor, hole, board, prefix):
+        """Opponent's real action in the bet-size scheme: exact sizes map exactly, others by
+        pseudo-harmonic translation between the neighbouring abstract fractions."""
+        legal = state.legal_actions()
+        if kind == 'f':
+            return FOLD if FOLD in legal else CALL
+        raises = [a for a in legal if a >= 2]
+        if kind == 'c' or not raises:
+            return CALL
+        if amount >= self.stack:
+            return max(raises)
+        f = pot_fraction(amount, commits, actor)
+        if len(raises) > 1 and self.stack - amount > 0.25 * 2 * amount:
+            # Not effectively committed: an abstract all-in would end the abstract hand while the
+            # real hand continues (replay desync), so translate among the non-all-in sizes only.
+            raises = raises[:-1]
+        points = sorted([(0.0, CALL)] + [(pot_fraction(a, list(state.commits), actor), a) for a in raises])
+        if f >= points[-1][0]:
+            choice = points[-1][1]
+        else:
+            i = max(j for j in range(len(points)) if points[j][0] <= f)
+            (low, low_action), (high, high_action) = points[i], points[i + 1]
+            if f == low:
+                choice = low_action
+            else:
+                digest = hashlib.blake2b(repr((sorted(hole), sorted(board), prefix)).encode(), digest_size=8).digest()
+                u = np.random.default_rng(int.from_bytes(digest, 'big')).random()
+                choice = low_action if u < harmonic_probability(low, high, f) else high_action
+        if choice == CALL and self._call_closes(state):
+            return min(raises)
+        return choice
+
     def _to_abstract(self, state, kind, amount, commits, actor, hole, board, prefix):
+        if self.betting != 'fcpa':
+            return self._scheme_to_abstract(state, kind, amount, commits, actor, hole, board, prefix)
         legal = state.legal_actions()
         if kind == 'f':
             return FOLD if FOLD in legal else CALL

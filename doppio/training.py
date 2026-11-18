@@ -19,6 +19,9 @@ from .abstraction import AbstractGame, REPRESENTATIONS
 
 
 def _digest(representation):
+    if representation == 'buckets-v3':
+        from .buckets3 import digest
+        return digest()
     if representation not in ('buckets-v1', 'buckets-v2'):
         return None
     from .buckets import edge_digest
@@ -26,7 +29,7 @@ def _digest(representation):
 
 
 def train(name, iterations, seed, path, resume=None, target='bot', *,
-          representation=None, stack_bb=100, checkpoint_every=1000, max_seconds=None,
+          representation=None, stack_bb=100, betting='fcpa', checkpoint_every=1000, max_seconds=None,
           max_rss_mb=None, metrics_path=None):
     profile = active_profile(target)
     if iterations < 1 or checkpoint_every < 1:
@@ -50,7 +53,9 @@ def train(name, iterations, seed, path, resume=None, target='bot', *,
             raise ValueError('Exact resume requires the checkpoint Python and NumPy versions')
     if previous and previous.get('stack_bb', 100) != stack_bb:
         raise ValueError('Cannot change stack size on resume')
-    raw_game = game(name, stack_bb=stack_bb) if name == 'holdem' else game(name)
+    if previous and previous.get('betting', 'fcpa') != betting:
+        raise ValueError('Cannot change betting abstraction on resume')
+    raw_game = game(name, stack_bb=stack_bb, betting=betting) if name == 'holdem' else game(name)
     g = AbstractGame(raw_game,representation) if representation!='exact-v1' else raw_game
     solver = external_sampling_mccfr.ExternalSamplingSolver(g)
     disk_path = None
@@ -103,7 +108,7 @@ def train(name, iterations, seed, path, resume=None, target='bot', *,
     def snapshot(reason):
         rng = np.random.get_state()
         report = dict(schema=3, algorithm='external_sampling_mccfr',game=name,
-                      engine=ENGINE,specification=spec(stack_bb) if name=='holdem' else {},stack_bb=stack_bb,
+                      engine=ENGINE,specification=spec(stack_bb, betting) if name=='holdem' else {},stack_bb=stack_bb,betting=betting,
                       representation=representation,abstraction_digest=_digest(representation),profile=profile.metadata(),
                       storage='sqlite' if disk_path else 'memory',
                       table_bytes=Path(disk_path).stat().st_size if disk_path else None,

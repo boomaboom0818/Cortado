@@ -15,7 +15,16 @@ class Policy:
         self.decisions = 0
         if self.data:
             from .game import game
-            self.game_id = str(game(self.data["game"], stack_bb=self.data.get("stack_bb", 100)) if self.data["game"] == "holdem" else game(self.data["game"]))
+            self.betting = self.data.get('betting', 'fcpa')
+            if self.data["game"] == "holdem":
+                g = game("holdem", stack_bb=self.data.get("stack_bb", 100), betting=self.betting)
+                self.game_id = str(getattr(g, 'game', g))
+            else:
+                self.game_id = str(game(self.data["game"]))
+            if self.data.get('representation') == 'buckets-v3':
+                from .buckets3 import digest
+                if self.data.get('abstraction_digest') != digest():
+                    raise ValueError('Checkpoint bucket tables do not match installed buckets-v3 tables')
             if self.data.get('representation') in ('buckets-v1', 'buckets-v2'):
                 from .buckets import edge_digest
                 if self.data.get('abstraction_digest') != edge_digest():
