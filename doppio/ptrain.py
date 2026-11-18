@@ -12,6 +12,7 @@ Checkpoints use the ordinary schema-3 format (`algorithm` external_sampling_mccf
 scheme. Resume continues from the last completed round and is deterministic given the config.
 """
 import argparse
+import gc
 import json
 import os
 import platform
@@ -93,6 +94,9 @@ def train(config, directory, resume=False):
     representation, betting, stack_bb = config['representation'], config['betting'], config['stack_bb']
     workers, batch = config['workers'], config['batch']
     _GAME = AbstractGame(game('holdem', stack_bb=stack_bb, betting=betting), representation)
+    if representation == 'buckets-v3':
+        from .buckets3 import _tables
+        _tables()
     profile = active_profile('bot')
     digest = _digest(representation)
     if resume:
@@ -130,17 +134,21 @@ def train(config, directory, resume=False):
 
     while True:
         jobs = [(_seed(config['seed'], round_index, w), batch) for w in range(workers)]
+        # Freeze the master's objects so garbage collection in the forked workers does not write to
+        # (and thereby copy) every shared page; merge each worker's changes as soon as they arrive.
+        gc.collect()
+        gc.freeze()
         with context.Pool(workers) as pool:
-            deltas = pool.map(_worker, jobs)
-        for delta in deltas:
-            for key, (regret, average) in delta.items():
-                row = _TABLE.get(key)
-                if row is None:
-                    _TABLE[key] = [regret, average]
-                else:
-                    row[0] += regret
-                    row[1] += average
-        del deltas
+            for delta in pool.imap_unordered(_worker, jobs):
+                for key, (regret, average) in delta.items():
+                    row = _TABLE.get(key)
+                    if row is None:
+                        _TABLE[key] = [regret, average]
+                    else:
+                        row[0] += regret
+                        row[1] += average
+                del delta
+        gc.unfreeze()
         round_index += 1
         iterations += workers * batch
         elapsed = time.perf_counter() - start
