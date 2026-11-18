@@ -189,9 +189,12 @@ class FullActionAgent:
                 if state.is_chance_node() or state.is_terminal() or state.current_player() != actor:
                     raise Desync('abstract turn order differs')
                 prefix += text
+                self._bracket = None
                 abstract = self._to_abstract(state, kind, amount, commits, actor, hole, board, prefix)
                 if trace is not None:
-                    trace.append((index, actor, state.information_state_string(actor), tuple(state.legal_actions()), abstract))
+                    # bracket: [(abstract action, translation weight)], and whether the real size was off-tree
+                    bracket, off = self._bracket or ([(abstract, 1.0)], False)
+                    trace.append((index, actor, state.information_state_string(actor), tuple(state.legal_actions()), abstract, bracket, off))
                 state.apply_action(abstract)
                 commits[actor] = max(commits) if kind == 'c' else amount if kind == 'r' else commits[actor]
                 actor ^= 1
@@ -215,7 +218,8 @@ class FullActionAgent:
 
     def _scheme_to_abstract(self, state, kind, amount, commits, actor, hole, board, prefix):
         """Opponent's real action in the bet-size scheme: exact sizes map exactly, others by
-        pseudo-harmonic translation between the neighbouring abstract fractions."""
+        pseudo-harmonic translation between the neighbouring abstract fractions.
+        Records `self._bracket = ([(abstract action, weight)], off_tree)` for range estimation."""
         legal = state.legal_actions()
         if kind == 'f':
             return FOLD if FOLD in legal else CALL
@@ -232,16 +236,21 @@ class FullActionAgent:
         points = sorted([(0.0, CALL)] + [(pot_fraction(a, list(state.commits), actor), a) for a in raises])
         if f >= points[-1][0]:
             choice = points[-1][1]
+            self._bracket = ([(choice, 1.0)], f - points[-1][0] > 1e-6)
         else:
             i = max(j for j in range(len(points)) if points[j][0] <= f)
             (low, low_action), (high, high_action) = points[i], points[i + 1]
             if f == low:
                 choice = low_action
+                self._bracket = ([(choice, 1.0)], False)
             else:
+                p_low = harmonic_probability(low, high, f)
                 digest = hashlib.blake2b(repr((sorted(hole), sorted(board), prefix)).encode(), digest_size=8).digest()
                 u = np.random.default_rng(int.from_bytes(digest, 'big')).random()
-                choice = low_action if u < harmonic_probability(low, high, f) else high_action
+                choice = low_action if u < p_low else high_action
+                self._bracket = ([(low_action, p_low), (high_action, 1 - p_low)], True)
         if choice == CALL and self._call_closes(state):
+            self._bracket = ([(min(raises), 1.0)], True)
             return min(raises)
         return choice
 

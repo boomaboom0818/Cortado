@@ -284,7 +284,7 @@ class ResolvingAgent(FullActionAgent):
             for entry in trace:
                 if entry[0] == 'river_start':
                     continue
-                street, actor, text, legal, action = entry
+                street, actor, text, legal, action = entry[:5]
                 if actor != player or street == 3:
                     continue
                 shown = board[:0 if street == 0 else street + 2]

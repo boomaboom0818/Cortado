@@ -27,6 +27,9 @@ def _task(args):
     if kind == 'resolve':
         from .resolve import ResolvingAgent
         agent = ResolvingAgent(base, fallback=fallback)
+    elif kind == 'rhresolve':
+        from .rhresolve import HistoryResolvingAgent
+        agent = HistoryResolvingAgent(base, fallback=fallback)
     else:
         agent = FullActionAgent(base, fallback=fallback)
     if opponent == 'lbr':
@@ -35,6 +38,8 @@ def _task(args):
         from .pool import PoolPolicy
         report = evaluate(agent, PoolPolicy(opponent), pairs, seed, 'holdem', full_actions=True, stack_bb=agent.stack_bb, aivat=aivat)
     report['source_counts'] = dict(agent.stats)
+    if hasattr(agent, 'resolve_stats'):
+        report['resolve_stats'] = dict(agent.resolve_stats)
     report['candidate_latencies_ms'] = [x * 1000 for x in agent.latencies]
     report['cpu_seconds'] = time.process_time() - start
     return opponent, report
@@ -98,7 +103,7 @@ def main():
     p.add_argument('--fallback', choices=['heuristic', 'uniform'], default='heuristic')
     p.add_argument('--opponents', nargs='+', default=list(OPPONENTS))
     p.add_argument('--aivat', action='store_true', help='Also report AIVAT-corrected estimates (weights 1,1,1,1)')
-    p.add_argument('--agent', choices=['blueprint', 'resolve'], default='blueprint')
+    p.add_argument('--agent', choices=['blueprint', 'resolve', 'rhresolve'], default='blueprint')
     p.add_argument('--out')
     args = p.parse_args()
     report = run(args.checkpoint, pairs=args.pairs, seed=args.seed, workers=args.workers, blocks=args.blocks,

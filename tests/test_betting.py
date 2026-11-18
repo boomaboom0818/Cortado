@@ -66,3 +66,13 @@ def test_scheme_agent_is_legal_against_arbitrary_sizes(tmp_path):
     for style in ('random-size', 'overbet', 'min-raiser'):
         evaluate(agent, PoolPolicy(style), pairs=15, seed=11, name='holdem', full_actions=True)
     assert agent.decisions > 0 and sum(agent.stats.values()) == agent.decisions
+
+
+def test_history_resolver_plays_legally_and_resolves_off_tree(tmp_path):
+    from doppio.rhresolve import HistoryResolvingAgent
+    config = dict(representation='buckets-v1', betting='sizes-v1', stack_bb=100, workers=2, batch=30, seed=3, iterations=60)
+    ptrain.train(config, tmp_path)
+    agent = HistoryResolvingAgent(Policy('checkpoint', str(tmp_path / 'latest.json.gz')), iterations=30)
+    evaluate(agent, PoolPolicy('random-size'), pairs=12, seed=21, name='holdem', full_actions=True)
+    assert agent.resolve_stats['resolved'] > 0
+    assert agent.stats['resolve'] == agent.resolve_stats['resolved']
