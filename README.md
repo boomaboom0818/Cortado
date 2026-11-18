@@ -2,6 +2,13 @@
 
 Working research prototype, **not a competitive poker bot yet**. Exclusively two players, 100 BB reset stacks, 0.5/1 blinds, no rake. Seat 0 is button/small blind, acts first preflop; seat 1 acts first thereafter. Engine chips are half a BB. Evaluation swaps policies between these seats on repeated deals.
 
+## Models
+
+Two frozen candidates are in `models/`: **A** (100 BB, 526k iterations) and **B** (200 BB, 1.35M iterations), both `buckets-v1`.
+On reserved deals B beats all nine scripted pool bots and neither candidate was exploited by LBR; A cannot be shown to beat the nit.
+Slumbot was only played for 2,683 hands (inconclusive). Strength against strong opponents is unproven. See `models/README.md`
+for each option, usage and limits, and `results/final-test-1/REPORT.md` for the numbers.
+
 ## Install and run
 
 Python 3.12 is pinned for binary package reproducibility; `uv` can install it.
