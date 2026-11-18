@@ -1,0 +1,258 @@
+{
+  "schema": 1,
+  "pool_version": "pool-v1",
+  "checkpoint": "runs/buckets200-42/iteration-527245.json.gz",
+  "seed": 700000,
+  "fallback": "heuristic",
+  "lbr_hands_sampled": 60,
+  "aivat_weights": [
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "wall_seconds": 334.46163594699465,
+  "units": "bb/100, positive favours the candidate",
+  "opponents": {
+    "nit": {
+      "aivat_mean_bb_per_100": 23.310304261397295,
+      "aivat_ci95": [
+        -33.27354225068744,
+        79.89415077348202
+      ],
+      "aivat_variance_ratio": 0.5464566534825771,
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 5.308333333333334,
+      "ci95": [
+        -71.23627548674605,
+        81.85294215341273
+      ],
+      "candidate_latency_ms_p50": 2.136466995580122,
+      "candidate_latency_ms_p95": 2.8265110042411834,
+      "candidate_latency_ms_max": 25.24590300163254,
+      "cpu_seconds": 364.414130713,
+      "candidate_decision_sources": {
+        "table": 0.9997222607971115,
+        "desync_heuristic": 0.0002777392028884877
+      },
+      "candidate_decisions": 14402
+    },
+    "tag": {
+      "aivat_mean_bb_per_100": 184.27163872002347,
+      "aivat_ci95": [
+        107.22401580845643,
+        261.3192616315905
+      ],
+      "aivat_variance_ratio": 0.47197533944841336,
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 213.78333333333336,
+      "ci95": [
+        101.63325259367765,
+        325.9334140729891
+      ],
+      "candidate_latency_ms_p50": 2.102422993630171,
+      "candidate_latency_ms_p95": 2.845508648897521,
+      "candidate_latency_ms_max": 39.12483202293515,
+      "cpu_seconds": 398.87482313600003,
+      "candidate_decision_sources": {
+        "table": 0.998936037050945,
+        "desync_heuristic": 0.0010639629490549506
+      },
+      "candidate_decisions": 15978
+    },
+    "lag": {
+      "aivat_mean_bb_per_100": 482.5823902551395,
+      "aivat_ci95": [
+        392.17474320224585,
+        572.9900373080332
+      ],
+      "aivat_variance_ratio": 0.40554146081367676,
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 455.29166666666663,
+      "ci95": [
+        313.32462391497904,
+        597.2587094183542
+      ],
+      "candidate_latency_ms_p50": 0.4011479904875159,
+      "candidate_latency_ms_p95": 2.854119625408202,
+      "candidate_latency_ms_max": 23.953925992827863,
+      "cpu_seconds": 396.212126892,
+      "candidate_decision_sources": {
+        "table": 0.9957062574982636,
+        "desync_heuristic": 0.00429374250173644
+      },
+      "candidate_decisions": 15837
+    },
+    "station": {
+      "aivat_mean_bb_per_100": 1108.2001140153016,
+      "aivat_ci95": [
+        996.6230656726524,
+        1219.7771623579506
+      ],
+      "aivat_variance_ratio": 0.44901059782768216,
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 1117.7250000000001,
+      "ci95": [
+        951.2126030252525,
+        1284.2373969747478
+      ],
+      "candidate_latency_ms_p50": 2.247777010779828,
+      "candidate_latency_ms_p95": 2.846328192390501,
+      "candidate_latency_ms_max": 122.00030899839476,
+      "cpu_seconds": 449.2879409359999,
+      "candidate_decision_sources": {
+        "table": 0.9998928705340404,
+        "desync_heuristic": 0.00010712946595961219
+      },
+      "candidate_decisions": 18669
+    },
+    "maniac": {
+      "aivat_mean_bb_per_100": 1275.7592138191237,
+      "aivat_ci95": [
+        1168.405866435487,
+        1383.1125612027604
+      ],
+      "aivat_variance_ratio": 0.2684043558038677,
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 1212.575,
+      "ci95": [
+        1005.3601809332625,
+        1419.7898190667374
+      ],
+      "candidate_latency_ms_p50": 0.2760589704848826,
+      "candidate_latency_ms_p95": 2.7654139848891646,
+      "candidate_latency_ms_max": 37.723432993516326,
+      "cpu_seconds": 334.711257958,
+      "candidate_decision_sources": {
+        "table": 1.0
+      },
+      "candidate_decisions": 12111
+    },
+    "min-raiser": {
+      "aivat_mean_bb_per_100": 244.8655507559013,
+      "aivat_ci95": [
+        166.57560494810082,
+        323.1554965637018
+      ],
+      "aivat_variance_ratio": 0.42777385996508677,
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 319.39166666666665,
+      "ci95": [
+        199.69036552559305,
+        439.09296780774025
+      ],
+      "candidate_latency_ms_p50": 0.4501399816945195,
+      "candidate_latency_ms_p95": 2.881514828186482,
+      "candidate_latency_ms_max": 26.924053963739425,
+      "cpu_seconds": 397.25004755200007,
+      "candidate_decision_sources": {
+        "table": 0.9950167160789756,
+        "desync_heuristic": 0.004983283921024412
+      },
+      "candidate_decisions": 15853
+    },
+    "third-pot": {
+      "aivat_mean_bb_per_100": 376.9590988882139,
+      "aivat_ci95": [
+        295.3905068065989,
+        458.5276909698288
+      ],
+      "aivat_variance_ratio": 0.432130740076311,
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 380.2416666666667,
+      "ci95": [
+        256.15778082012855,
+        504.3255525132048
+      ],
+      "candidate_latency_ms_p50": 0.4274495004210621,
+      "candidate_latency_ms_p95": 2.8993874351726845,
+      "candidate_latency_ms_max": 60.21977396449074,
+      "cpu_seconds": 402.935794237,
+      "candidate_decision_sources": {
+        "table": 0.9952463267070009,
+        "desync_heuristic": 0.004753673292999135
+      },
+      "candidate_decisions": 16198
+    },
+    "overbet": {
+      "aivat_mean_bb_per_100": 447.6618113737388,
+      "aivat_ci95": [
+        349.4491497732819,
+        545.8744729741957
+      ],
+      "aivat_variance_ratio": 0.47887330577570375,
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 374.9916666666667,
+      "ci95": [
+        233.06723410907995,
+        516.9160992242535
+      ],
+      "candidate_latency_ms_p50": 0.3572220157366246,
+      "candidate_latency_ms_p95": 3.2639458688208833,
+      "candidate_latency_ms_max": 27.840136957820505,
+      "cpu_seconds": 372.18554893300006,
+      "candidate_decision_sources": {
+        "table": 0.9220145664422152,
+        "desync_heuristic": 0.0779854335577848
+      },
+      "candidate_decisions": 14554
+    },
+    "random-size": {
+      "aivat_mean_bb_per_100": 386.1241750810211,
+      "aivat_ci95": [
+        302.94768033269526,
+        469.300669829347
+      ],
+      "aivat_variance_ratio": 0.40056082160960393,
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 310.2083333333333,
+      "ci95": [
+        178.78684547920972,
+        441.6298211874569
+      ],
+      "candidate_latency_ms_p50": 0.40133303264155984,
+      "candidate_latency_ms_p95": 3.2930292887613173,
+      "candidate_latency_ms_max": 32.62849501334131,
+      "cpu_seconds": 397.55295337100006,
+      "candidate_decision_sources": {
+        "table": 0.9734148696491792,
+        "desync_heuristic": 0.02658513035082073
+      },
+      "candidate_decisions": 15535
+    },
+    "lbr": {
+      "aivat_mean_bb_per_100": 48.23071943452422,
+      "aivat_ci95": [
+        -80.22910889456676,
+        176.6905477636152
+      ],
+      "aivat_variance_ratio": 0.29280840241270073,
+      "independent_pairs": 300,
+      "hands": 600,
+      "mean_bb_per_100": -123.41666666666666,
+      "ci95": [
+        -360.81385433557955,
+        113.98052100224626
+      ],
+      "candidate_latency_ms_p50": 0.32722094329074025,
+      "candidate_latency_ms_p95": 2.9081320099066943,
+      "candidate_latency_ms_max": 10.001123999245465,
+      "cpu_seconds": 250.8353282609998,
+      "candidate_decision_sources": {
+        "table": 0.984744469870328,
+        "desync_heuristic": 0.015255530129672006
+      },
+      "candidate_decisions": 1311
+    }
+  },
+  "note": "Development evaluation unless the seed block was pre-registered as final; intervals are per-opponent and not multiplicity-corrected."
+}

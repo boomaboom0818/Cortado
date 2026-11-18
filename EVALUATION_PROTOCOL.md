@@ -48,3 +48,19 @@ required; anonymous sessions do not appear on leaderboards). Every finished hand
 with Slumbot's revealed cards; all 200 pilot hands matched. Slumbot is not a duplicate opponent: hands are
 independent and unpaired, but the API returns `baseline_winnings` (Slumbot playing our seat with the same
 cards), which gives an unbiased lower-variance difference estimator. Be polite with request volume.
+
+## Pre-registration: Slumbot test 1 (committed before any hand was played)
+
+```
+candidate checkpoint:        runs/buckets200-42/iteration-527245.json.gz  (buckets-v1, stack_bb=200, 527,245 iterations)
+candidate sha256:            a7f80e86251b8c48ffc42567bffac974686080220ba197809d594dc4ceec8084
+selection:                   best of the three 200 BB candidates against the development pool on
+                             nit/tag/min-raiser/third-pot/random-size (results/strength-gates/dev-*.json)
+adapter / client version:    git 5f10a90 (FullActionAgent heuristic fallback; doppio/slumbot.py)
+opponent:                    hosted Slumbot API, anonymous session, version not disclosed by the provider
+hands:                       1,000 (even; fixed, no optional stopping); action seed 3
+primary metric:              baseline-adjusted bb/100 (winnings - baseline_winnings) with 95% t-interval
+secondary:                   raw bb/100 with 95% t-interval; protocol checks; decision sources
+claim rule:                  "beats Slumbot at 200 BB (this sample)" only if the primary lower bound > 0;
+                             "loses" only if the primary upper bound < 0; otherwise inconclusive
+```

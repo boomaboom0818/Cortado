@@ -1,0 +1,258 @@
+{
+  "schema": 1,
+  "pool_version": "pool-v1",
+  "checkpoint": "runs/bucketsv2-42/iteration-440933.json.gz",
+  "seed": 700000,
+  "fallback": "heuristic",
+  "lbr_hands_sampled": 60,
+  "aivat_weights": [
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "wall_seconds": 399.74989123200066,
+  "units": "bb/100, positive favours the candidate",
+  "opponents": {
+    "nit": {
+      "aivat_mean_bb_per_100": -74.89667232428093,
+      "aivat_ci95": [
+        -112.02507415422937,
+        -37.76827049433249
+      ],
+      "aivat_variance_ratio": 0.6117669155074983,
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": -53.349999999999994,
+      "ci95": [
+        -100.8193475368771,
+        -5.8806524631228925
+      ],
+      "candidate_latency_ms_p50": 2.093438000883907,
+      "candidate_latency_ms_p95": 2.7997183613479137,
+      "candidate_latency_ms_max": 15.839689993299544,
+      "cpu_seconds": 399.399328743,
+      "candidate_decision_sources": {
+        "table": 1.0
+      },
+      "candidate_decisions": 14229
+    },
+    "tag": {
+      "aivat_mean_bb_per_100": -17.26840825647575,
+      "aivat_ci95": [
+        -63.88330604466136,
+        29.346489531709857
+      ],
+      "aivat_variance_ratio": 0.5279352726957631,
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": -17.224999999999998,
+      "ci95": [
+        -81.38057424816714,
+        46.93057424816715
+      ],
+      "candidate_latency_ms_p50": 2.0645914773922414,
+      "candidate_latency_ms_p95": 2.8224953508470207,
+      "candidate_latency_ms_max": 29.69838702119887,
+      "cpu_seconds": 427.179898483,
+      "candidate_decision_sources": {
+        "table": 0.9998715313463515,
+        "desync_heuristic": 0.00012846865364850977
+      },
+      "candidate_decisions": 15568
+    },
+    "lag": {
+      "aivat_mean_bb_per_100": 212.58440229818606,
+      "aivat_ci95": [
+        157.08433933970795,
+        268.0844652566642
+      ],
+      "aivat_variance_ratio": 0.4528467849294087,
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 184.31666666666666,
+      "ci95": [
+        101.8425198714268,
+        266.7908134619065
+      ],
+      "candidate_latency_ms_p50": 0.3366909804753959,
+      "candidate_latency_ms_p95": 2.817866508848965,
+      "candidate_latency_ms_max": 68.65423801355064,
+      "cpu_seconds": 416.581873113,
+      "candidate_decision_sources": {
+        "table": 0.9999338230428165,
+        "heuristic_miss": 6.617695718350871e-05
+      },
+      "candidate_decisions": 15111
+    },
+    "station": {
+      "aivat_mean_bb_per_100": 716.2493264181531,
+      "aivat_ci95": [
+        644.239181029607,
+        788.2594718066993
+      ],
+      "aivat_variance_ratio": 0.5594343403020015,
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 700.1583333333333,
+      "ci95": [
+        603.8820919803479,
+        796.4345746863187
+      ],
+      "candidate_latency_ms_p50": 2.195978944655508,
+      "candidate_latency_ms_p95": 2.7962618914898485,
+      "candidate_latency_ms_max": 66.07621599687263,
+      "cpu_seconds": 475.721469938,
+      "candidate_decision_sources": {
+        "table": 0.9996716826265389,
+        "desync_heuristic": 0.0003283173734610123
+      },
+      "candidate_decisions": 18275
+    },
+    "maniac": {
+      "aivat_mean_bb_per_100": 614.6024121872213,
+      "aivat_ci95": [
+        560.849960947109,
+        668.3548634273335
+      ],
+      "aivat_variance_ratio": 0.2417759955804274,
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 559.65,
+      "ci95": [
+        450.3319984420217,
+        668.9680015579783
+      ],
+      "candidate_latency_ms_p50": 0.21233750157989562,
+      "candidate_latency_ms_p95": 2.731620508711785,
+      "candidate_latency_ms_max": 13.140210008714348,
+      "cpu_seconds": 345.0759593219999,
+      "candidate_decision_sources": {
+        "table": 1.0
+      },
+      "candidate_decisions": 11066
+    },
+    "min-raiser": {
+      "aivat_mean_bb_per_100": 29.187164580836654,
+      "aivat_ci95": [
+        -20.26474769051944,
+        78.63907685219274
+      ],
+      "aivat_variance_ratio": 0.47533974337727897,
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 39.80833333333334,
+      "ci95": [
+        -31.91839575921975,
+        111.53506242588642
+      ],
+      "candidate_latency_ms_p50": 0.3589899861253798,
+      "candidate_latency_ms_p95": 2.8586552245542407,
+      "candidate_latency_ms_max": 61.96664902381599,
+      "cpu_seconds": 418.570435321,
+      "candidate_decision_sources": {
+        "table": 0.9947358031190366,
+        "desync_heuristic": 0.005264196880963348
+      },
+      "candidate_decisions": 15197
+    },
+    "third-pot": {
+      "aivat_mean_bb_per_100": 87.17061589203732,
+      "aivat_ci95": [
+        37.45190426357517,
+        136.88932752049948
+      ],
+      "aivat_variance_ratio": 0.4956237279914148,
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 90.75833333333333,
+      "ci95": [
+        20.135714003039,
+        161.38095266362765
+      ],
+      "candidate_latency_ms_p50": 0.35541702527552843,
+      "candidate_latency_ms_p95": 2.927289984654635,
+      "candidate_latency_ms_max": 40.12597003020346,
+      "cpu_seconds": 424.487477001,
+      "candidate_decision_sources": {
+        "table": 0.9948662003465315,
+        "desync_heuristic": 0.005005454662131811,
+        "heuristic_miss": 0.0001283449913367131
+      },
+      "candidate_decisions": 15583
+    },
+    "overbet": {
+      "aivat_mean_bb_per_100": 275.98304684688827,
+      "aivat_ci95": [
+        223.74242660121294,
+        328.22366709256363
+      ],
+      "aivat_variance_ratio": 0.43559473113425135,
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 262.8416666666667,
+      "ci95": [
+        183.68873304438313,
+        341.99460028895027
+      ],
+      "candidate_latency_ms_p50": 0.31203546677716076,
+      "candidate_latency_ms_p95": 7.581236117403017,
+      "candidate_latency_ms_max": 27.816187008284032,
+      "cpu_seconds": 407.7078312740001,
+      "candidate_decision_sources": {
+        "table": 0.9360506473182529,
+        "desync_heuristic": 0.06394935268174705
+      },
+      "candidate_decisions": 14058
+    },
+    "random-size": {
+      "aivat_mean_bb_per_100": 188.57189813734635,
+      "aivat_ci95": [
+        139.14204425671932,
+        238.0017520179734
+      ],
+      "aivat_variance_ratio": 0.4579743911348987,
+      "independent_pairs": 3000,
+      "hands": 6000,
+      "mean_bb_per_100": 177.13333333333335,
+      "ci95": [
+        104.09199373583272,
+        250.174672930834
+      ],
+      "candidate_latency_ms_p50": 0.3537079901434481,
+      "candidate_latency_ms_p95": 8.722374390345065,
+      "candidate_latency_ms_max": 81.44902798812836,
+      "cpu_seconds": 428.21778913100013,
+      "candidate_decision_sources": {
+        "table": 0.974647133587531,
+        "desync_heuristic": 0.02535286641246906
+      },
+      "candidate_decisions": 14949
+    },
+    "lbr": {
+      "aivat_mean_bb_per_100": 39.72963524260321,
+      "aivat_ci95": [
+        -50.65313286794762,
+        130.11240335315404
+      ],
+      "aivat_variance_ratio": 0.2395937941312193,
+      "independent_pairs": 300,
+      "hands": 600,
+      "mean_bb_per_100": 41.833333333333336,
+      "ci95": [
+        -142.81604748068142,
+        226.4827141473481
+      ],
+      "candidate_latency_ms_p50": 0.2760454954113811,
+      "candidate_latency_ms_p95": 3.3489826048025857,
+      "candidate_latency_ms_max": 32.1074029779993,
+      "cpu_seconds": 273.2650672240002,
+      "candidate_decision_sources": {
+        "table": 0.9911290322580645,
+        "desync_heuristic": 0.008870967741935484
+      },
+      "candidate_decisions": 1240
+    }
+  },
+  "note": "Development evaluation unless the seed block was pre-registered as final; intervals are per-opponent and not multiplicity-corrected."
+}
