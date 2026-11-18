@@ -87,3 +87,24 @@ def test_round_trip_against_engine_backed_fake(tmp_path):
     results, stats = play(FullActionAgent(Policy('checkpoint', path)), 30, 5, tmp_path / 'log.jsonl', client)
     assert len(results) == 30 and all(r['engine_check']['ok'] for r in results)
     assert {r['seat'] for r in results} == {0, 1}
+
+
+def test_lost_act_reply_abandons_hand_and_resume_continues(tmp_path):
+    path = tmp_path / 'deep.json.gz'
+    train('holdem', 20, 2, path, representation='buckets-v1', stack_bb=200)
+    from doppio.slumbot import Client, completed
+    fake, calls = FakeSlumbot(4), {'n': 0}
+
+    def flaky(endpoint, body):
+        calls['n'] += 1
+        if endpoint == 'act' and calls['n'] == 5:
+            raise OSError('connection reset')
+        return fake(endpoint, body)
+    agent = FullActionAgent(Policy('checkpoint', path))
+    log = tmp_path / 'log.jsonl'
+    play(agent, 6, 1, log, Client(delay=0, opener=flaky))
+    play(agent, 4, 2, log, Client(delay=0, opener=fake))
+    records = completed(log)
+    assert [r['hand'] for r in records] == list(range(10))
+    assert sum('abandoned' in r for r in records) == 1
+    assert all(r['engine_check']['ok'] for r in records if 'final' in r)

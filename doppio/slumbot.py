@@ -143,14 +143,16 @@ class Client:
             return json.loads(response.read())
 
     def call(self, endpoint, body):
-        for attempt in range(4):
+        # Only new_hand is safe to resend; a lost /act reply leaves the server state unknown.
+        attempts = 7 if endpoint == 'new_hand' else 1
+        for attempt in range(attempts):
             try:
                 result = self.opener(endpoint, body)
                 break
             except OSError:
-                if attempt == 3:
+                if attempt == attempts - 1:
                     raise
-                time.sleep(2 ** attempt)
+                time.sleep(min(60, 2 ** attempt))
         if 'error_msg' in result:
             raise ProtocolError(result['error_msg'])
         self.token = result.get('token') or self.token
@@ -164,6 +166,13 @@ class Client:
         return self.call('act', {'token': self.token, 'incr': incr})
 
 
+def completed(log_path):
+    path = Path(log_path)
+    if not path.exists():
+        return []
+    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+
+
 def play(agent, hands, seed, log_path, client=None, verify=True):
     client = client or Client()
     full = game('holdem', full_actions=True, stack_bb=STACK_BB)
@@ -171,28 +180,40 @@ def play(agent, hands, seed, log_path, client=None, verify=True):
     stats = {}
     log = open(log_path, 'a')
     results = []
-    for number in range(hands):
+    start_number = len(completed(log_path))
+    for number in range(start_number, start_number + hands):
         response = client.new_hand()
         record = dict(hand=number, decisions=[])
-        while 'winnings' not in response:
-            seat = 1 if response['client_pos'] == 0 else 0
-            state = replay(full, seat, tuple(response['hole_cards']), tuple(response['board']),
-                           response['action'], stats)
-            if state.current_player() != seat:
-                raise ProtocolError(f"Not our turn after {response['action']!r}")
-            obs = observe(state)
-            tick = time.perf_counter()
-            move = agent.act(obs, rng)
-            latency = time.perf_counter() - tick
-            incr = to_incr(state, move)
-            record['decisions'].append(dict(action=response['action'], move=move, incr=incr, ms=latency * 1000))
-            response = client.act(incr)
+        try:
+            response = _play_hand(agent, client, full, rng, stats, response, record)
+        except OSError as error:
+            # Network failure mid-hand: outcome unknown; log and move on (independent of the cards).
+            record.update(abandoned=repr(error))
+            log.write(json.dumps(record) + '\n'); log.flush()
+            continue
         record.update(final=response, seat=1 if response['client_pos'] == 0 else 0)
         if verify and response.get('bot_hole_cards'):
             record['engine_check'] = _verify(full, response)
         log.write(json.dumps(record) + '\n'); log.flush()
         results.append(record)
     return results, stats
+
+
+def _play_hand(agent, client, full, rng, stats, response, record):
+    while 'winnings' not in response:
+        seat = 1 if response['client_pos'] == 0 else 0
+        state = replay(full, seat, tuple(response['hole_cards']), tuple(response['board']),
+                       response['action'], stats)
+        if state.current_player() != seat:
+            raise ProtocolError(f"Not our turn after {response['action']!r}")
+        obs = observe(state)
+        tick = time.perf_counter()
+        move = agent.act(obs, rng)
+        latency = time.perf_counter() - tick
+        incr = to_incr(state, move)
+        record['decisions'].append(dict(action=response['action'], move=move, incr=incr, ms=latency * 1000))
+        response = client.act(incr)
+    return response
 
 
 def _verify(full, response):
@@ -228,6 +249,7 @@ def main():
     p.add_argument('--seed', type=int, default=1)
     p.add_argument('--log', required=True)
     p.add_argument('--delay', type=float, default=0.25)
+    p.add_argument('--resume', action='store_true', help='Append to an existing log until --hands total are logged')
     args = p.parse_args()
     if args.hands % 2:
         p.error('Use an even number of hands so both positions are played equally')
@@ -238,7 +260,12 @@ def main():
         digest = hashlib.file_digest(stream, 'sha256').hexdigest()
     agent = FullActionAgent(base)
     start = time.perf_counter()
-    results, stats = play(agent, args.hands, args.seed, args.log, Client(delay=args.delay))
+    done = len(completed(args.log))
+    if done and not args.resume:
+        p.error('Log exists; pass --resume to continue it')
+    _, stats = play(agent, args.hands - done, args.seed, args.log, Client(delay=args.delay))
+    logged = completed(args.log)
+    results = [r for r in logged if 'final' in r]
     chips = np.array([r['final']['winnings'] for r in results], dtype=float)
     bb = chips / 100
     n = len(bb)
@@ -246,7 +273,8 @@ def main():
     half = float(t.ppf(.975, n - 1) * bb.std(ddof=1) / np.sqrt(n) * 100) if n > 1 else float('nan')
     summary = dict(log=str(args.log), checkpoint=args.checkpoint, checkpoint_sha256=digest, hands=n, mean_bb_per_100=float(bb.mean() * 100),
                    ci95=[float(bb.mean() * 100 - half), float(bb.mean() * 100 + half)],
-                   sources=dict(agent.stats), protocol_stats=stats,
+                   hands_logged=len(logged), hands_abandoned=len(logged) - len(results),
+                   sources_this_invocation=dict(agent.stats), protocol_stats_this_invocation=stats,
                    engine_checks=[r['engine_check'] for r in results if 'engine_check' in r],
                    baseline_keys=sorted({k for r in results for k in r['final']}),
                    wall_seconds=time.perf_counter() - start,
