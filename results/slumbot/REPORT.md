@@ -34,6 +34,6 @@ and the adjusted estimate is near zero.
   carry no score. Including them as zeros gives -8.3 [-96.4, +79.8], essentially unchanged.
 
 ### What would be needed for a decisive result
-The adjusted standard deviation per hand is about 14 BB. A ±20 bb/100 interval needs roughly 19,000 hands;
-±10 needs about 75,000. At the observed ~2.2 s per hand (including the 0.25 s politeness delay), 19,000 hands
+The adjusted standard deviation per hand is about 14 BB. A ±20 bb/100 interval needs roughly 20,000 hands;
+±10 needs about 79,000. At the observed ~2.2 s per hand (including the 0.25 s politeness delay), 20,000 hands
 is about 12 hours of sequential requests. Ask before running that volume against a free service.
