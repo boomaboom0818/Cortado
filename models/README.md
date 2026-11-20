@@ -1,32 +1,47 @@
 # Models
 
-Two frozen candidates are included, chosen on development data and then tested once on reserved deals
-(`results/final-test-1/REPORT.md`, rules in `EVALUATION_PROTOCOL.md`). Both are strategy tables from
-external-sampling MCCFR with the `buckets-v1` card abstraction. Neither is shown to be strong against a strong
-opponent, and neither is a GTO or near-GTO strategy.
+**C (100 BB) and D (200 BB) are the current frozen models.** They replaced A and B after final test 2
+(`results/final-test-2/REPORT.md`), under a promotion rule written down before the test (`EVALUATION_PROTOCOL.md`).
+A and B stay here as earlier versions. All four are strategy tables from external-sampling MCCFR self-play.
+None is shown to be strong against a strong opponent, and none is a GTO or near-GTO strategy.
 
-| | **Model A** | **Model B** |
-|---|---|---|
-| File | `cortado-a-100bb.json.gz` | `cortado-b-200bb.json.gz` |
-| Stack depth | 100 BB (blinds 0.5 / 1 BB) | 200 BB (blinds 0.5 / 1 BB) |
-| Training | 525,987 iterations, seed 42 | 1,348,732 iterations, seed 42 |
-| SHA-256 | `64e5057b...be559` | `3024ae99...b239` |
-| Use it when | you play 100 BB | you play 200 BB (Slumbot's depth) |
-| Beats the nine scripted pool bots? | 8 of 9; not shown against the nit (+5, CI -4 to +15) | **9 of 9**, worst case +72 vs the nit (CI +57 to +87) |
-| LBR attacker | no profitable exploit found (+43) | no profitable exploit found (+85) |
-| Slumbot (hosted, 200 BB) | not played | 2,683 hands: -32 bb/100, CI -100 to +37, **inconclusive** |
+| | **C (main, 100 BB)** | **D (main, 200 BB)** | A (earlier, 100 BB) | B (earlier, 200 BB) |
+|---|---|---|---|---|
+| File | `cortado-c-100bb.json.gz` | `cortado-d-200bb.json.gz` | `cortado-a-100bb.json.gz` | `cortado-b-200bb.json.gz` |
+| Abstraction | `sizes-v1` + `buckets-v3` | `sizes-v1` + `buckets-v3` | FCPA + `buckets-v1` | FCPA + `buckets-v1` |
+| Training | 3.18M iterations, seed 42 (parallel) | 7.22M iterations, seed 42 (parallel) | 525,987 iterations, seed 42 | 1,348,732 iterations, seed 42 |
+| Needs bucket tables? | **yes**, see below | **yes**, see below | no | no |
+| Head to head vs earlier model | beats A: +30 bb/100 [+23, +38] | beats B: +33 bb/100 [+22, +45] | | |
+| Scripted pool bots beaten (of 9) | **9** (worst: nit +22 [+12, +31]) | **9** (worst: nit +69 [+54, +84]) | 8 (not the nit) | 9 |
+| LBR attacker | no profitable exploit found (+101) | no profitable exploit found (+132) | none found (+43) | none found (+85) |
+| Slumbot | not played | not played | not played | 2,683 hands, inconclusive |
 
-Numbers are AIVAT-corrected bb/100 on 30,000 paired deals per bot (reserved seed block 100,000,000). A and B play
-different games, so their scores are not comparable. Full SHA-256 values are in `SHA256SUMS`.
+Numbers are AIVAT-corrected bb/100 on 30,000 paired deals per opponent, on reserved deals (C/D: final test 2;
+A/B: final test 1). The pool numbers of the two tests are on different deals and are not directly comparable; the
+head-to-head is the direct comparison. Full SHA-256 values are in `SHA256SUMS`.
 
-## What both share
+## C and D: what changed from A and B
 
-* **Card abstraction `buckets-v1`:** 169 lossless preflop classes; 30 equity buckets per postflop street; imperfect recall.
-* **Betting:** trained on the FCPA abstraction (fold, call, pot, all-in). `FullActionAgent` plays the full no-limit game:
-  opponent bet sizes are mapped to the nearest trained size, and our choices map back to legal chip amounts.
-* **Coverage:** the table answers about 93-100% of decisions; the rest fall back to an equity heuristic.
-* **Known weakness:** very large or unusual bet sizes (overbets) can knock the agent off its replayed history,
-  and it then plays the heuristic. Training longer did not improve the results (`results/curve-v1-*/REPORT.md`).
+* **Bet sizes (`sizes-v1`):** trained with several pot fractions per street (including a 2x-pot overbet) instead of only
+  pot and all-in, so most real bet sizes need no translation. Off-tree sizes are translated between the two nearest trained sizes.
+* **Card buckets (`buckets-v3`):** 50 buckets per postflop street from exact enumeration over every distinct board
+  (E[HS²] on flop and turn, hand strength on the river), instead of 30 sampled equity buckets.
+* Real-history re-solving was tried for C/D-type models and dropped: it was worse on development data
+  (`results/rhresolve-ab-*/REPORT.md`).
+
+## The bucket tables (C and D only)
+
+C and D look up each hand's postflop bucket in precomputed tables: for every distinct flop, turn and river board
+(up to suit symmetry), which of the 50 buckets each two-card holding belongs to. The tables are about 190 MB
+(the river table alone is 178 MB, above GitHub's 100 MB file limit), so they are not in git. Build them once:
+
+```sh
+.venv/bin/python -m cortado.buckets3 build     # about 15 minutes on 12 cores; writes cortado/data/buckets-v3/
+.venv/bin/python -m cortado.buckets3 digest    # must print 4573773f525cd6c43bc4d88868834440847357e8a2006d7a704d28ee7416ac3a
+```
+
+The build is deterministic. Loading C or D checks the tables' digest against the one stored in the model and refuses
+to play with different tables. A and B use a small bucket file that is in git and need nothing extra.
 
 ## Use
 
@@ -34,16 +49,17 @@ different games, so their scores are not comparable. Full SHA-256 values are in 
 from cortado.policies import Policy
 from cortado.fullaction import FullActionAgent
 
-agent = FullActionAgent(Policy('checkpoint', 'models/cortado-b-200bb.json.gz'))
+agent = FullActionAgent(Policy('checkpoint', 'models/cortado-d-200bb.json.gz'))
 # agent.act(observation, rng) -> engine action id
 ```
 
 ```sh
-.venv/bin/python -m cortado.fullbench models/cortado-a-100bb.json.gz --pairs 3000 --aivat --seed 700000 --out dev.json
-.venv/bin/python -m cortado.slumbot models/cortado-b-200bb.json.gz --hands 200 --log slumbot.jsonl   # contacts slumbot.com
+.venv/bin/python -m cortado.fullbench models/cortado-c-100bb.json.gz --pairs 3000 --aivat --seed 700000 --out dev.json
+.venv/bin/python -m cortado.headsup models/cortado-d-200bb.json.gz models/cortado-b-200bb.json.gz --pairs 3000 --seed 850000
 ```
 
-Use development seeds (650000-899999) for any tuning. The reserved block (100,000,000 and up) has been used by the final test.
+Use development seeds (650000-899999) for any tuning. Seed bases 100,000,000, 200,000,000 and 300,000,000 have been
+used by final tests 1 and 2; a new final test needs a fresh block and a new pre-registration.
 
 ## Other model options in this repo (not frozen candidates)
 

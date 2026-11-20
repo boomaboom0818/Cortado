@@ -4,10 +4,12 @@ Working research prototype, **not a competitive poker bot yet**. Exclusively two
 
 ## Models
 
-Two frozen candidates are in `models/`: **A** (100 BB, 526k iterations) and **B** (200 BB, 1.35M iterations), both `buckets-v1`.
-On reserved deals B beats all nine scripted pool bots and neither candidate was exploited by LBR; A cannot be shown to beat the nit.
-Slumbot was only played for 2,683 hands (inconclusive). Strength against strong opponents is unproven. See `models/README.md`
-for each option, usage and limits, and `results/final-test-1/REPORT.md` for the numbers.
+The frozen models are **C** (100 BB) and **D** (200 BB) in `models/`: bet-size abstraction `sizes-v1` with exact
+`buckets-v3` card buckets. On reserved deals each beats its predecessor head to head (C vs A +30 bb/100, D vs B +33)
+and beats all nine scripted pool bots, and LBR found no profitable exploit. They need the bucket tables built once
+(`python -m cortado.buckets3 build`, about 15 minutes; not in git). The earlier models A and B are kept.
+Strength against strong opponents is unproven. See `models/README.md` for options, usage and limits, and
+`results/final-test-2/REPORT.md` for the numbers.
 
 ## Install and run
 

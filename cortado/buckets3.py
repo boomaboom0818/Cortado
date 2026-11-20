@@ -166,6 +166,9 @@ def build(workers=None):
 # -- runtime lookup ----------------------------------------------------------------------------
 @lru_cache(maxsize=1)
 def _tables():
+    if not (DIR / 'meta.json').exists():
+        raise FileNotFoundError(f'buckets-v3 tables not found in {DIR}. They are not in git (about 190 MB); build them once '
+                                'with `python -m cortado.buckets3 build` (about 15 minutes, deterministic).')
     out = {}
     for size in (3, 4, 5):
         table = np.load(DIR / f'table-{size}.npy', mmap_mode='r')
