@@ -1,4 +1,4 @@
-# Doppio heads-up poker research pipeline
+# Cortado heads-up poker research pipeline
 
 Working research prototype, **not a competitive poker bot yet**. Exclusively two players, 100 BB reset stacks, 0.5/1 blinds, no rake. Seat 0 is button/small blind, acts first preflop; seat 1 acts first thereafter. Engine chips are half a BB. Evaluation swaps policies between these seats on repeated deals.
 
