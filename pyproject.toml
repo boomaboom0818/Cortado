@@ -1,14 +1,14 @@
 [project]
-name = "doppio"
+name = "cortado"
 version = "0.1.0"
 requires-python = ">=3.12,<3.13"
 dependencies = ["open-spiel==2.0.2", "numpy==2.5.4", "scipy==1.18.1"]
 [project.optional-dependencies]
 test = ["pytest==9.2.0"]
 [project.scripts]
-doppio = "doppio.cli:main"
+cortado = "cortado.cli:main"
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
-include = ["doppio*"]
+include = ["cortado*"]

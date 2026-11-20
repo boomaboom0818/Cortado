@@ -8,9 +8,9 @@
 * River: exact hand strength.
 
 Everything is computed by full enumeration (no sampling) for every suit-isomorphic board, so
-the tables are deterministic and reproducible with `python -m doppio.buckets3 build`.
+the tables are deterministic and reproducible with `python -m cortado.buckets3 build`.
 Each street is split into `BUCKETS` equal-mass buckets over uniformly random deals. Tables are
-generated into `doppio/data/buckets-v3/` (ignored by git); their digest is stored in checkpoints.
+generated into `cortado/data/buckets-v3/` (ignored by git); their digest is stored in checkpoints.
 """
 import argparse
 import hashlib

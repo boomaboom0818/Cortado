@@ -1,11 +1,11 @@
 from itertools import combinations
 import numpy as np
-from doppio.cards import DECK
-from doppio.evaluation import evaluate
-from doppio.policies import Policy
-from doppio.pool import PoolPolicy
-from doppio.resolve import ResolvingAgent, RiverSolver, build_tree
-from doppio.training import train
+from cortado.cards import DECK
+from cortado.evaluation import evaluate
+from cortado.policies import Policy
+from cortado.pool import PoolPolicy
+from cortado.resolve import ResolvingAgent, RiverSolver, build_tree
+from cortado.training import train
 
 BOARD = ('Ah', 'Kd', '7c', '4s', '2h')
 HANDS = [h for h in combinations(DECK, 2) if not set(h) & set(BOARD)]

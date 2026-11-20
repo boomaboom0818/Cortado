@@ -1,15 +1,15 @@
 import json
 import numpy as np
 from open_spiel.python.algorithms import external_sampling_mccfr
-from doppio.abstraction import AbstractGame
-from doppio.betting import BettingGame, raise_targets, SCHEMES
-from doppio.checkpoints import load
-from doppio.evaluation import evaluate
-from doppio.fullaction import FullActionAgent, pot_fraction
-from doppio.game import game
-from doppio.policies import Policy
-from doppio.pool import PoolPolicy
-from doppio import ptrain
+from cortado.abstraction import AbstractGame
+from cortado.betting import BettingGame, raise_targets, SCHEMES
+from cortado.checkpoints import load
+from cortado.evaluation import evaluate
+from cortado.fullaction import FullActionAgent, pot_fraction
+from cortado.game import game
+from cortado.policies import Policy
+from cortado.pool import PoolPolicy
+from cortado import ptrain
 
 
 def test_targets_are_legal_and_include_allin():
@@ -69,7 +69,7 @@ def test_scheme_agent_is_legal_against_arbitrary_sizes(tmp_path):
 
 
 def test_history_resolver_plays_legally_and_resolves_off_tree(tmp_path):
-    from doppio.rhresolve import HistoryResolvingAgent
+    from cortado.rhresolve import HistoryResolvingAgent
     config = dict(representation='buckets-v1', betting='sizes-v1', stack_bb=100, workers=2, batch=30, seed=3, iterations=60)
     ptrain.train(config, tmp_path)
     agent = HistoryResolvingAgent(Policy('checkpoint', str(tmp_path / 'latest.json.gz')), iterations=30)

@@ -7,7 +7,7 @@ opponent, and neither is a GTO or near-GTO strategy.
 
 | | **Model A** | **Model B** |
 |---|---|---|
-| File | `doppio-a-100bb.json.gz` | `doppio-b-200bb.json.gz` |
+| File | `cortado-a-100bb.json.gz` | `cortado-b-200bb.json.gz` |
 | Stack depth | 100 BB (blinds 0.5 / 1 BB) | 200 BB (blinds 0.5 / 1 BB) |
 | Training | 525,987 iterations, seed 42 | 1,348,732 iterations, seed 42 |
 | SHA-256 | `64e5057b...be559` | `3024ae99...b239` |
@@ -31,16 +31,16 @@ different games, so their scores are not comparable. Full SHA-256 values are in 
 ## Use
 
 ```python
-from doppio.policies import Policy
-from doppio.fullaction import FullActionAgent
+from cortado.policies import Policy
+from cortado.fullaction import FullActionAgent
 
-agent = FullActionAgent(Policy('checkpoint', 'models/doppio-b-200bb.json.gz'))
+agent = FullActionAgent(Policy('checkpoint', 'models/cortado-b-200bb.json.gz'))
 # agent.act(observation, rng) -> engine action id
 ```
 
 ```sh
-.venv/bin/python -m doppio.fullbench models/doppio-a-100bb.json.gz --pairs 3000 --aivat --seed 700000 --out dev.json
-.venv/bin/python -m doppio.slumbot models/doppio-b-200bb.json.gz --hands 200 --log slumbot.jsonl   # contacts slumbot.com
+.venv/bin/python -m cortado.fullbench models/cortado-a-100bb.json.gz --pairs 3000 --aivat --seed 700000 --out dev.json
+.venv/bin/python -m cortado.slumbot models/cortado-b-200bb.json.gz --hands 200 --log slumbot.jsonl   # contacts slumbot.com
 ```
 
 Use development seeds (650000-899999) for any tuning. The reserved block (100,000,000 and up) has been used by the final test.
@@ -52,9 +52,9 @@ Use development seeds (650000-899999) for any tuning. The reserved block (100,00
 | `exact-v1` (full cards, FCPA, 100 BB) | `results/holdem-10k.json.gz`, 10k iterations | Legacy baseline. The table answers only about 47% of decisions, so it often plays uniformly. |
 | `suits-v1` (suit-symmetric cards) | disk-backed campaign, `results/bot-campaign/` | 524k / 565k iterations per seed. Large SQLite tables (3.8-4.2 GB) are not committed. About 53% of decisions fell back to uniform against a calling bot. Beats weak controls on development data only. |
 | `buckets-v2` (adds board texture) | config `configs/train-bucketsv2-*.json` | At equal compute it did worse than v1 on development data. Trained checkpoints are not committed. |
-| Re-solving agent (`--agent resolve`) | `doppio/resolve.py`, `results/resolve/REPORT.md` | Real-time river re-solver. No measured benefit and high latency, so it is off by default. |
-| Baseline policies | `uniform`, `call`, `aggressive` (`doppio.cli`) | Controls for sanity checks only. |
-| Scripted pool (`pool-v1`) and LBR | `doppio/pool.py`, `doppio/lbr.py` | Opponents we wrote for evaluation. Not models to deploy. |
+| Re-solving agent (`--agent resolve`) | `cortado/resolve.py`, `results/resolve/REPORT.md` | Real-time river re-solver. No measured benefit and high latency, so it is off by default. |
+| Baseline policies | `uniform`, `call`, `aggressive` (`cortado.cli`) | Controls for sanity checks only. |
+| Scripted pool (`pool-v1`) and LBR | `cortado/pool.py`, `cortado/lbr.py` | Opponents we wrote for evaluation. Not models to deploy. |
 
 Retrain with the configs in `configs/` (for example `train-buckets-42.json` for 100 BB, `train-buckets200-42.json`
 for 200 BB). Training and evaluation commands are in the root README.

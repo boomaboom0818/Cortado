@@ -2,7 +2,7 @@
 
 Host seen by this workspace: Intel i7-9750H (6 cores/12 threads), 15 GiB RAM, NVIDIA GTX 1660 Ti 6 GiB. This is not the 9950X machine. No AWS resources used.
 
-Leduc external-sampling MCCFR: seed 42, 10,000 iterations, 11.41 seconds, 936 information sets, exact exploitability 0.24094 chips/game. This tests the small-game pipeline; it is not Hold'em exploitability. Reproduce using `python -m doppio.cli train --game leduc --iterations 10000 --seed 42 --checkpoint /tmp/leduc.json.gz --checkpoint-every 10000`.
+Leduc external-sampling MCCFR: seed 42, 10,000 iterations, 11.41 seconds, 936 information sets, exact exploitability 0.24094 chips/game. This tests the small-game pipeline; it is not Hold'em exploitability. Reproduce using `python -m cortado.cli train --game leduc --iterations 10000 --seed 42 --checkpoint /tmp/leduc.json.gz --checkpoint-every 10000`.
 
 Hold'em suits-v1 pilot: seed 123, 1,000/2,000/3,000 iterations took cumulative 10.92/18.89/26.51 seconds, with 33,898/64,920/93,880 information sets and 142.5/161.0/195.9 MiB peak RSS reported before each snapshot's serialization. Timings include earlier periodic saves and concurrent system activity; don't extrapolate indefinitely. Detailed final report and benchmark are in profile-training.json and profile-benchmark.json. The call-opponent evaluation saw 1,213 misses in 2,214 decisions. Coverage depends heavily on opponent and does not establish quality. Each evaluation used 500 independent pairs; intervals are wide.
 

@@ -1,13 +1,13 @@
 import re
 import numpy as np
 import pytest
-from doppio.fullaction import (FullActionAgent, commitments, harmonic_probability, parse_sequence,
+from cortado.fullaction import (FullActionAgent, commitments, harmonic_probability, parse_sequence,
                                pot_fraction, to_real)
-from doppio.game import game, observe
-from doppio.policies import Policy
-from doppio.pool import PoolPolicy, STYLES
-from doppio.evaluation import evaluate
-from doppio.training import train
+from cortado.game import game, observe
+from cortado.policies import Policy
+from cortado.pool import PoolPolicy, STYLES
+from cortado.evaluation import evaluate
+from cortado.training import train
 
 
 class Uniform(Policy):

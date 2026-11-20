@@ -13,7 +13,7 @@ FIRST=$( [ -f "$RESTARTS" ] && grep -c ' start attempt=' "$RESTARTS" || echo 0)
 for attempt in $(seq "$FIRST" "$MAX_RESTARTS"); do
   seed=$((20 + attempt))
   echo "$(date -Is) start attempt=$attempt seed=$seed logged=$( [ -f "$LOG" ] && wc -l < "$LOG" || echo 0)" >> "$RESTARTS"
-  .venv/bin/python -m doppio.slumbot "$CKPT" --hands 20000 --seed "$seed" --log "$LOG" --resume \
+  .venv/bin/python -m cortado.slumbot "$CKPT" --hands 20000 --seed "$seed" --log "$LOG" --resume \
        > results/slumbot/test2-summary-attempt$attempt.json
   code=$?
   if [ "$code" -eq 0 ]; then

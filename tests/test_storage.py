@@ -1,10 +1,10 @@
 import numpy as np
 import pytest
-from doppio.storage import DiskTable
-from doppio.training import train
-from doppio.checkpoints import load, save
-from doppio.policies import Policy
-from doppio.game import game, observe
+from cortado.storage import DiskTable
+from cortado.training import train
+from cortado.checkpoints import load, save
+from cortado.policies import Policy
+from cortado.game import game, observe
 
 
 def materialize(table):
@@ -53,8 +53,8 @@ def test_failed_sqlite_save_preserves_checkpoint(tmp_path):
 
 def test_disk_bootstrap_and_resume(tmp_path):
     import json
-    from doppio.parallel import launch
-    from doppio.run import DEFAULT
+    from cortado.parallel import launch
+    from cortado.run import DEFAULT
     config=tmp_path/'config.json'
     config.write_text(json.dumps(dict(DEFAULT,game='kuhn',representation='exact-v1',iterations=10,storage='sqlite')))
     launch(config,tmp_path/'a',[42,43])
@@ -64,7 +64,7 @@ def test_disk_bootstrap_and_resume(tmp_path):
 
 
 def test_recursive_solver_with_one_cached_row(tmp_path,monkeypatch):
-    import doppio.training as training
+    import cortado.training as training
     original=training.DiskTable
     class TinyTable(original):
         def __init__(self,path,**kwargs):
@@ -80,7 +80,7 @@ def test_recursive_solver_with_one_cached_row(tmp_path,monkeypatch):
 
 def test_memory_guard_ignores_inherited_highwater(tmp_path,monkeypatch):
     import types
-    import doppio.training as training
+    import cortado.training as training
     monkeypatch.setattr(training.resource,'getrusage',lambda _:types.SimpleNamespace(ru_maxrss=10**12))
     result=train('kuhn',10,42,tmp_path/'guard.sqlite',max_rss_mb=1024)
     assert result['stop_reason']=='completed'
@@ -94,8 +94,8 @@ def test_sqlite_crash_leaves_committed_snapshot(tmp_path):
     train('kuhn',10,42,snapshot)
     script="""
 import os,sys
-from doppio.storage import DiskTable
-from doppio.checkpoints import load
+from cortado.storage import DiskTable
+from cortado.checkpoints import load
 saved=load(sys.argv[1])
 working=DiskTable(sys.argv[2])
 saved['table'].connection.backup(working.connection)

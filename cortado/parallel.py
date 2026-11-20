@@ -82,7 +82,7 @@ def launch(config_path, directory, seeds, resume=False, bootstrap_from=None):
                 save(worker_config,dict(config,seed=seed))
                 output=open(directory/f'seed-{seed}.log','a')
                 handles.append(output)
-                cmd=[sys.executable,'-m','doppio.run','--config',str(worker_config),
+                cmd=[sys.executable,'-m','cortado.run','--config',str(worker_config),
                      '--run-dir',str(directory/f'seed-{seed}')]
                 if resume or bootstrap_from:
                     cmd.append('--resume')

@@ -1,12 +1,12 @@
 import numpy as np
 import pytest
-from doppio.aivat import equity
-from doppio.cards import DECK
-from doppio.evaluation import evaluate
-from doppio.fullaction import FullActionAgent
-from doppio.game import game
-from doppio.pool import PoolPolicy
-from doppio.policies import Policy
+from cortado.aivat import equity
+from cortado.cards import DECK
+from cortado.evaluation import evaluate
+from cortado.fullaction import FullActionAgent
+from cortado.game import game
+from cortado.pool import PoolPolicy
+from cortado.policies import Policy
 
 
 class Uniform(Policy):

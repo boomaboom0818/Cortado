@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
-from doppio.abstraction import information_key
-from doppio.buckets import bucket, bucket_information, edge_digest, preflop_class, strength
-from doppio.cards import canonical_cards, exact_river_equity
-from doppio.game import game, observe
+from cortado.abstraction import information_key
+from cortado.buckets import bucket, bucket_information, edge_digest, preflop_class, strength
+from cortado.cards import canonical_cards, exact_river_equity
+from cortado.game import game, observe
 
 
 def test_preflop_classes_are_lossless_169():
@@ -42,7 +42,7 @@ def test_bucket_key_hides_cards_but_keeps_betting():
 
 
 def test_v2_adds_public_texture_only():
-    from doppio.buckets import texture
+    from cortado.buckets import texture
     assert texture(('Ah', '7h', '2h')) == 2 and texture(('Ah', 'Ad', '2c')) == 1
     assert texture(('Ah', '7d', '2c')) == 0 and texture(('Ah', 'Kh', 'Qh', 'Jh')) == 4
     g = game('holdem')

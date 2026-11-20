@@ -1,0 +1,30 @@
+{
+ "first": "runs/ptrain-v3-sizes-200/iteration-7220000.json.gz",
+ "second": "models/cortado-b-200bb.json.gz",
+ "seed": 850000,
+ "independent_pairs": 9996,
+ "hands": 19992,
+ "mean_bb_per_100": 44.11514605842337,
+ "ci95": [
+  15.11440682725717,
+  73.11588528958957
+ ],
+ "aivat_mean_bb_per_100": 38.58905884408419,
+ "aivat_ci95": [
+  19.57867166016658,
+  57.59944602800181
+ ],
+ "decision_sources": {
+  "first": {
+   "table": 39189,
+   "desync_heuristic": 16
+  },
+  "second": {
+   "table": 40839,
+   "desync_heuristic": 532
+  }
+ },
+ "wall_seconds": 165.44316204893403,
+ "units": "bb/100 for the first checkpoint",
+ "note": "Development evaluation; not a pre-registered final test."
+}

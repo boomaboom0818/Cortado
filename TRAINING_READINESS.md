@@ -24,8 +24,8 @@ SQLite snapshots are self-contained `.sqlite` files containing metadata, RNG sta
 After the readiness pilot passes:
 
 ```sh
-.venv/bin/python -m doppio.campaign --config configs/train-disk.json --run-dir runs/bot-campaign --bootstrap-from runs/disk-readiness --cycles 4 --pairs 2000
-.venv/bin/python -m doppio.status --run-dir runs/bot-campaign
+.venv/bin/python -m cortado.campaign --config configs/train-disk.json --run-dir runs/bot-campaign --bootstrap-from runs/disk-readiness --cycles 4 --pairs 2000
+.venv/bin/python -m cortado.status --run-dir runs/bot-campaign
 ```
 
 At most four train/evaluate cycles run, giving at most two hours of training wall budget plus initialization, checkpointing and evaluation. Each cycle saves training and development-evaluation reports, immutable iteration snapshots, current checkpoints and campaign status. Healthy completed/time-budget cycles continue automatically. Memory, disk, signal or worker failures halt escalation. A 4 GiB table stop is a research scaling gate, not a reason to raise the limit automatically. A terminal campaign returns its saved state rather than restarting. The 30-minute T3 checks inspect worker and campaign processes, checkpoint ages, resource use, logs and outcomes. They require T3 and this machine to stay available.

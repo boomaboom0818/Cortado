@@ -1,8 +1,8 @@
 import json
 import pytest
-from doppio.parallel import launch
-from doppio.run import DEFAULT
-from doppio.checkpoints import load
+from cortado.parallel import launch
+from cortado.run import DEFAULT
+from cortado.checkpoints import load
 
 
 def test_independent_workers_and_resume(tmp_path):
@@ -34,7 +34,7 @@ def test_bootstrap_fresh_budget(tmp_path):
 
 
 def test_status_without_loading_checkpoint(tmp_path):
-    from doppio.status import status
+    from cortado.status import status
     worker=tmp_path/'seed-42';worker.mkdir()
     (worker/'latest.json.gz').write_bytes(b'not loaded by health check')
     (worker/'metrics.jsonl').write_text('{"iterations": 123}\n{"partial":')

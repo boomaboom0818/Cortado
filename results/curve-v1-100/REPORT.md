@@ -1,6 +1,6 @@
 # Learning curve: buckets-v1, 100 BB (seed 42)
 
-The run was driven by `doppio.curve`, using a stopping rule fixed before it started:
+The run was driven by `cortado.curve`, using a stopping rule fixed before it started:
 
 - **Composite score:** the mean AIVAT-corrected bb/100 against six strategic pool-v1 bots (nit, tag, min-raiser, third-pot, random-size, overbet).
 - **Benchmark:** 3,000 paired deals, development seed 700000, with the same deals at every point.

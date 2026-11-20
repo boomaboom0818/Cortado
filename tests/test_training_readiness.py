@@ -3,11 +3,11 @@ import os
 import signal
 import numpy as np
 import pytest
-from doppio.abstraction import AbstractGame, information_key
-from doppio.game import game, observe
-from doppio.training import train
-from doppio.checkpoints import load, save
-from doppio.policies import Policy
+from cortado.abstraction import AbstractGame, information_key
+from cortado.game import game, observe
+from cortado.training import train
+from cortado.checkpoints import load, save
+from cortado.policies import Policy
 
 
 def test_abstract_resume_and_inference(tmp_path):
@@ -74,7 +74,7 @@ def test_failed_save_preserves_existing(tmp_path):
 
 
 def test_run_manifest_and_resume(tmp_path):
-    from doppio.run import DEFAULT, run
+    from cortado.run import DEFAULT, run
     config=tmp_path/'config.json'
     config.write_text(json.dumps(dict(DEFAULT,game='kuhn',representation='exact-v1',iterations=2)))
     directory=tmp_path/'run'
@@ -87,7 +87,7 @@ def test_run_manifest_and_resume(tmp_path):
 
 
 def test_numpy_stream_save(tmp_path):
-    from doppio.checkpoints import save
+    from cortado.checkpoints import save
     path=tmp_path/'arrays.json.gz'
     train('kuhn',10,42,path)
     data=load(path)

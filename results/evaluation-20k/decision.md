@@ -4,7 +4,7 @@ Evaluated the immutable 20,000-iteration seed 42 and 43 checkpoints on 2026-11-1
 
 Both candidates have positive individual 95% intervals against these four controls. The controls are weak; this does not establish competitive strength or low exploitability. Confidence intervals are individual, not corrected for multiple comparisons. Differences between candidates do not justify discarding either seed. Against call, about 54% of decisions miss the table and use uniform fallback; this is a substantial unresolved coverage issue.
 
-Decision: continue both seeds for one additional bounded batch from 20,000 toward 30,000 iterations, subject to the unchanged 120-second/worker limit and 1 GiB soft peak-RSS limit. Keep independent histories and retain the 20k checkpoints. Do not raise limits or loop indefinitely. Memory growth and fallback coverage require attention before larger runs. CLI: python -m doppio.parallel --config runs/cpu-pilot-config.json --run-dir runs/cpu-pilot --seeds 42 43 --resume.
+Decision: continue both seeds for one additional bounded batch from 20,000 toward 30,000 iterations, subject to the unchanged 120-second/worker limit and 1 GiB soft peak-RSS limit. Keep independent histories and retain the 20k checkpoints. Do not raise limits or loop indefinitely. Memory growth and fallback coverage require attention before larger runs. CLI: python -m cortado.parallel --config runs/cpu-pilot-config.json --run-dir runs/cpu-pilot --seeds 42 43 --resume.
 
 ## Actual next-run outcome
 

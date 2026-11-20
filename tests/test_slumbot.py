@@ -1,11 +1,11 @@
 import numpy as np
 import pytest
-from doppio.cards import DECK
-from doppio.fullaction import FullActionAgent, commitments
-from doppio.game import game, stack_of
-from doppio.policies import Policy
-from doppio.slumbot import SCALE, ProtocolError, parse_slumbot, play, replay, to_incr
-from doppio.training import train
+from cortado.cards import DECK
+from cortado.fullaction import FullActionAgent, commitments
+from cortado.game import game, stack_of
+from cortado.policies import Policy
+from cortado.slumbot import SCALE, ProtocolError, parse_slumbot, play, replay, to_incr
+from cortado.training import train
 
 FULL = game('holdem', full_actions=True, stack_bb=200)
 
@@ -56,7 +56,7 @@ class FakeSlumbot:
 
     def _apply(self, incr):
         info = self.state.information_state_string(self.state.current_player())
-        from doppio.fullaction import street_base
+        from cortado.fullaction import street_base
         if incr[0] == 'b':
             move = street_base(info) + int(incr[1:]) // SCALE
         else:
@@ -82,7 +82,7 @@ class FakeSlumbot:
 def test_round_trip_against_engine_backed_fake(tmp_path):
     path = tmp_path / 'deep.json.gz'
     train('holdem', 40, 2, path, representation='buckets-v1', stack_bb=200)
-    from doppio.slumbot import Client
+    from cortado.slumbot import Client
     client = Client(delay=0, opener=FakeSlumbot(3))
     results, stats = play(FullActionAgent(Policy('checkpoint', path)), 30, 5, tmp_path / 'log.jsonl', client)
     assert len(results) == 30 and all(r['engine_check']['ok'] for r in results)
@@ -92,7 +92,7 @@ def test_round_trip_against_engine_backed_fake(tmp_path):
 def test_lost_act_reply_abandons_hand_and_resume_continues(tmp_path):
     path = tmp_path / 'deep.json.gz'
     train('holdem', 20, 2, path, representation='buckets-v1', stack_bb=200)
-    from doppio.slumbot import Client, completed
+    from cortado.slumbot import Client, completed
     fake, calls = FakeSlumbot(4), {'n': 0}
 
     def flaky(endpoint, body):

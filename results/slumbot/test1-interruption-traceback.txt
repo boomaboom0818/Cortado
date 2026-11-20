@@ -28,21 +28,21 @@ During handling of the above exception, another exception occurred:
 Traceback (most recent call last):
   File "<frozen runpy>", line 198, in _run_module_as_main
   File "<frozen runpy>", line 88, in _run_code
-  File "/home/boomaboom0818/Doppio-heads-up-poker-/doppio/slumbot.py", line 267, in <module>
+  File "/home/boomaboom0818/Cortado-heads-up-poker-/cortado/slumbot.py", line 267, in <module>
     main()
-  File "/home/boomaboom0818/Doppio-heads-up-poker-/doppio/slumbot.py", line 241, in main
+  File "/home/boomaboom0818/Cortado-heads-up-poker-/cortado/slumbot.py", line 241, in main
     results, stats = play(agent, args.hands, args.seed, args.log, Client(delay=args.delay))
                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/boomaboom0818/Doppio-heads-up-poker-/doppio/slumbot.py", line 189, in play
+  File "/home/boomaboom0818/Cortado-heads-up-poker-/cortado/slumbot.py", line 189, in play
     response = client.act(incr)
                ^^^^^^^^^^^^^^^^
-  File "/home/boomaboom0818/Doppio-heads-up-poker-/doppio/slumbot.py", line 164, in act
+  File "/home/boomaboom0818/Cortado-heads-up-poker-/cortado/slumbot.py", line 164, in act
     return self.call('act', {'token': self.token, 'incr': incr})
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/boomaboom0818/Doppio-heads-up-poker-/doppio/slumbot.py", line 148, in call
+  File "/home/boomaboom0818/Cortado-heads-up-poker-/cortado/slumbot.py", line 148, in call
     result = self.opener(endpoint, body)
              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/boomaboom0818/Doppio-heads-up-poker-/doppio/slumbot.py", line 142, in _post
+  File "/home/boomaboom0818/Cortado-heads-up-poker-/cortado/slumbot.py", line 142, in _post
     with urllib.request.urlopen(request, timeout=self.timeout) as response:
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "/home/boomaboom0818/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/urllib/request.py", line 215, in urlopen

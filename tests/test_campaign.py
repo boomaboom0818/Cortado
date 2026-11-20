@@ -1,7 +1,7 @@
 import json
-from doppio.campaign import campaign
-from doppio.run import DEFAULT
-from doppio.training import train
+from cortado.campaign import campaign
+from cortado.run import DEFAULT
+from cortado.training import train
 
 
 def test_bounded_cycles_and_terminal_reentry(tmp_path):

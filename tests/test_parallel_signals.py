@@ -5,8 +5,8 @@ import signal
 import subprocess
 import sys
 import time
-from doppio.run import DEFAULT
-from doppio.checkpoints import load
+from cortado.run import DEFAULT
+from cortado.checkpoints import load
 
 
 def test_launcher_forwards_term(tmp_path):
@@ -14,7 +14,7 @@ def test_launcher_forwards_term(tmp_path):
     config.write_text(json.dumps(dict(DEFAULT,game='kuhn',representation='exact-v1',iterations=10000000,checkpoint_every=100)))
     root=tmp_path/'run'
     with open(tmp_path/'output.log','w') as log:
-        process=subprocess.Popen([sys.executable,'-m','doppio.parallel','--config',str(config),'--run-dir',str(root),'--seeds','42','43'],stdout=log,stderr=log)
+        process=subprocess.Popen([sys.executable,'-m','cortado.parallel','--config',str(config),'--run-dir',str(root),'--seeds','42','43'],stdout=log,stderr=log)
         try:
             deadline=time.monotonic()+30
             while not all((root/f'seed-{s}'/'latest.json.gz').exists() for s in (42,43)):

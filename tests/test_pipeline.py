@@ -1,10 +1,10 @@
 import numpy as np
 import pytest
-from doppio.game import game, observe
-from doppio.policies import Policy
-from doppio.evaluation import evaluate
-from doppio.opponents import Range
-from doppio.training import train
+from cortado.game import game, observe
+from cortado.policies import Policy
+from cortado.evaluation import evaluate
+from cortado.opponents import Range
+from cortado.training import train
 
 def dealt():
     s=game().new_initial_state()
@@ -100,7 +100,7 @@ def test_board_royal_flush_tie():
     assert s.is_terminal() and s.returns()==[0,0]
 
 def test_suit_canonicalization():
-    from doppio.abstraction import canonical_information as canonical
+    from cortado.abstraction import canonical_information as canonical
     assert canonical('[Private: AcKd][Public: QcJh2s]') == canonical('[Private: AhKs][Public: QhJd2c]')
     assert canonical('[Private: AcKc]') != canonical('[Private: AcKd]')
 
@@ -113,7 +113,7 @@ def test_action_encoding_mismatch(tmp_path):
 
 def test_bot_profile_and_deferred_human(tmp_path):
     import json
-    from doppio.profiles import active_profile, PROFILES
+    from cortado.profiles import active_profile, PROFILES
     assert active_profile('bot').status == 'active'
     assert PROFILES['bot'].objective == PROFILES['human'].objective
     assert PROFILES['bot'].opponent_identity != PROFILES['human'].opponent_identity
@@ -126,7 +126,7 @@ def test_bot_profile_and_deferred_human(tmp_path):
 
 def test_cli_rejects_deferred_human():
     import subprocess,sys
-    result=subprocess.run([sys.executable,'-m','doppio.cli','evaluate','--mode','human'],capture_output=True,text=True)
+    result=subprocess.run([sys.executable,'-m','cortado.cli','evaluate','--mode','human'],capture_output=True,text=True)
     assert result.returncode==2
     assert 'deferred' in result.stderr
 

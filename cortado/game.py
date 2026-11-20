@@ -7,7 +7,7 @@ SPEC = dict(betting='nolimit', numPlayers=2, numRounds=4, blind='1 2',
             numBoardCards='0 3 1 1', stack='200 200', bettingAbstraction='fcpa')
 
 def spec(stack_bb=100, betting='fcpa'):
-    """Engine specification. Bet-size schemes (doppio.betting) restrict the engine's full game."""
+    """Engine specification. Bet-size schemes (cortado.betting) restrict the engine's full game."""
     if stack_bb < 2:
         raise ValueError('stack must be at least two big blinds')
     return dict(SPEC, stack=f'{2*stack_bb} {2*stack_bb}', bettingAbstraction='fcpa' if betting == 'fcpa' else 'fullgame')
