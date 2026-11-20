@@ -10,7 +10,7 @@ None is shown to be strong against a strong opponent, and none is a GTO or near-
 | File | `cortado-c-100bb.json.gz` | `cortado-d-200bb.json.gz` | `cortado-a-100bb.json.gz` | `cortado-b-200bb.json.gz` |
 | Abstraction | `sizes-v1` + `buckets-v3` | `sizes-v1` + `buckets-v3` | FCPA + `buckets-v1` | FCPA + `buckets-v1` |
 | Training | 3.18M iterations, seed 42 (parallel) | 7.22M iterations, seed 42 (parallel) | 525,987 iterations, seed 42 | 1,348,732 iterations, seed 42 |
-| Needs bucket tables? | **yes**, see below | **yes**, see below | no | no |
+| Bucket tables | in repo, unpacked on first use | in repo, unpacked on first use | small file in git | small file in git |
 | Head to head vs earlier model | beats A: +30 bb/100 [+23, +38] | beats B: +33 bb/100 [+22, +45] | | |
 | Scripted pool bots beaten (of 9) | **9** (worst: nit +22 [+12, +31]) | **9** (worst: nit +69 [+54, +84]) | 8 (not the nit) | 9 |
 | LBR attacker | no profitable exploit found (+101) | no profitable exploit found (+132) | none found (+43) | none found (+85) |
@@ -32,16 +32,18 @@ head-to-head is the direct comparison. Full SHA-256 values are in `SHA256SUMS`.
 ## The bucket tables (C and D only)
 
 C and D look up each hand's postflop bucket in precomputed tables: for every distinct flop, turn and river board
-(up to suit symmetry), which of the 50 buckets each two-card holding belongs to. The tables are about 190 MB
-(the river table alone is 178 MB, above GitHub's 100 MB file limit), so they are not in git. Build them once:
+(up to suit symmetry), which of the 50 buckets each two-card holding belongs to. Unpacked they are about 190 MB, so
+the repo carries them compressed as `cortado/data/buckets-v3.tar.xz` (9 MB). **Nothing to do:** the first time C or D
+is loaded, the archive is unpacked into `cortado/data/buckets-v3/` (a few seconds) and its digest is checked.
 
 ```sh
-.venv/bin/python -m cortado.buckets3 build     # about 15 minutes on 12 cores; writes cortado/data/buckets-v3/
-.venv/bin/python -m cortado.buckets3 digest    # must print 4573773f525cd6c43bc4d88868834440847357e8a2006d7a704d28ee7416ac3a
+.venv/bin/python -m cortado.buckets3 extract   # optional: unpack now instead of on first use
+.venv/bin/python -m cortado.buckets3 digest    # 4573773f525cd6c43bc4d88868834440847357e8a2006d7a704d28ee7416ac3a
+.venv/bin/python -m cortado.buckets3 build     # optional: regenerate from scratch (about 15 minutes, deterministic)
 ```
 
-The build is deterministic. Loading C or D checks the tables' digest against the one stored in the model and refuses
-to play with different tables. A and B use a small bucket file that is in git and need nothing extra.
+Loading C or D refuses to play if the tables' digest differs from the one stored in the model.
+A and B use a small bucket file that is in git and need nothing extra.
 
 ## Use
 

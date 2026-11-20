@@ -6,8 +6,8 @@ Working research prototype, **not a competitive poker bot yet**. Exclusively two
 
 The frozen models are **C** (100 BB) and **D** (200 BB) in `models/`: bet-size abstraction `sizes-v1` with exact
 `buckets-v3` card buckets. On reserved deals each beats its predecessor head to head (C vs A +30 bb/100, D vs B +33)
-and beats all nine scripted pool bots, and LBR found no profitable exploit. They need the bucket tables built once
-(`python -m cortado.buckets3 build`, about 15 minutes; not in git). The earlier models A and B are kept.
+and beats all nine scripted pool bots, and LBR found no profitable exploit. Their card-bucket tables ship compressed
+in the repo and unpack automatically on first use. The earlier models A and B are kept.
 Strength against strong opponents is unproven. See `models/README.md` for options, usage and limits, and
 `results/final-test-2/REPORT.md` for the numbers.
 

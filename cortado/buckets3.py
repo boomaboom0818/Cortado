@@ -11,6 +11,7 @@ Everything is computed by full enumeration (no sampling) for every suit-isomorph
 the tables are deterministic and reproducible with `python -m cortado.buckets3 build`.
 Each street is split into `BUCKETS` equal-mass buckets over uniformly random deals. Tables are
 generated into `cortado/data/buckets-v3/` (ignored by git); their digest is stored in checkpoints.
+A compressed copy (`cortado/data/buckets-v3.tar.xz`, about 9 MB) is committed and unpacked automatically on first use.
 """
 import argparse
 import hashlib
@@ -27,6 +28,8 @@ from .cards import DECK, parse_information
 VERSION = 'buckets-v3'
 BUCKETS = {3: 50, 4: 50, 5: 50}
 DIR = Path(__file__).with_name('data') / VERSION
+ARCHIVE = DIR.with_name(VERSION + '.tar.xz')
+DIGEST = '4573773f525cd6c43bc4d88868834440847357e8a2006d7a704d28ee7416ac3a'
 _ID = {card: index for index, card in enumerate(DECK)}  # id = 4 * rank + suit
 PERMS = [np.array(p) for p in permutations(range(4))]
 PAIR = np.full((52, 52), -1, dtype=np.int32)          # holding (x < y) -> index 0..1325
@@ -164,11 +167,29 @@ def build(workers=None):
 
 
 # -- runtime lookup ----------------------------------------------------------------------------
+def extract():
+    """Unpack the committed archive into DIR and check the digest."""
+    import tarfile
+    with tarfile.open(ARCHIVE, 'r:xz') as archive:
+        archive.extractall(DIR.parent, filter='data')
+    digest.cache_clear()
+    if digest() != DIGEST:
+        raise RuntimeError(f'Unpacked buckets-v3 tables have digest {digest()}, expected {DIGEST}')
+
+
+def ensure():
+    if (DIR / 'meta.json').exists():
+        return
+    if ARCHIVE.exists():
+        extract()
+        return
+    raise FileNotFoundError(f'buckets-v3 tables not found in {DIR} and no archive at {ARCHIVE}. '
+                            'Build them with `python -m cortado.buckets3 build` (about 15 minutes, deterministic).')
+
+
 @lru_cache(maxsize=1)
 def _tables():
-    if not (DIR / 'meta.json').exists():
-        raise FileNotFoundError(f'buckets-v3 tables not found in {DIR}. They are not in git (about 190 MB); build them once '
-                                'with `python -m cortado.buckets3 build` (about 15 minutes, deterministic).')
+    ensure()
     out = {}
     for size in (3, 4, 5):
         table = np.load(DIR / f'table-{size}.npy', mmap_mode='r')
@@ -179,6 +200,7 @@ def _tables():
 
 @lru_cache(maxsize=1)
 def digest():
+    ensure()
     h = hashlib.sha256()
     for name in ('meta.json', 'table-3.npy', 'table-4.npy', 'table-5.npy', 'boards-3.npy', 'boards-4.npy', 'boards-5.npy'):
         h.update((DIR / name).read_bytes())
@@ -207,11 +229,14 @@ def bucket_information(information):
 
 def main():
     p = argparse.ArgumentParser(description='Build or inspect the exact buckets-v3 tables')
-    p.add_argument('command', choices=['build', 'digest'])
+    p.add_argument('command', choices=['build', 'extract', 'digest'])
     p.add_argument('--workers', type=int)
     a = p.parse_args()
     if a.command == 'build':
         build(a.workers)
+    elif a.command == 'extract':
+        extract()
+        print('digest', digest())
     else:
         print(digest())
 
