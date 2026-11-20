@@ -43,7 +43,7 @@ need variance reduction (G6) for tight bounds.
 ## External opponents
 
 All publicly reachable strong HUNL benchmarks found play 200 big blinds: Slumbot, the GTO Wizard benchmark
-service, and OpenHoldem-hosted baselines. `doppio/slumbot.py` plays Slumbot through its public API (no login
+service, and OpenHoldem-hosted baselines. `cortado/slumbot.py` plays Slumbot through its public API (no login
 required; anonymous sessions do not appear on leaderboards). Every finished hand is replayed in our engine
 with Slumbot's revealed cards; all 200 pilot hands matched. Slumbot is not a duplicate opponent: hands are
 independent and unpaired, but the API returns `baseline_winnings` (Slumbot playing our seat with the same
@@ -56,7 +56,7 @@ candidate checkpoint:        runs/buckets200-42/iteration-527245.json.gz  (bucke
 candidate sha256:            a7f80e86251b8c48ffc42567bffac974686080220ba197809d594dc4ceec8084
 selection:                   best of the three 200 BB candidates against the development pool on
                              nit/tag/min-raiser/third-pot/random-size (results/strength-gates/dev-*.json)
-adapter / client version:    git 5f10a90 (FullActionAgent heuristic fallback; doppio/slumbot.py)
+adapter / client version:    git 5f10a90 (FullActionAgent heuristic fallback; cortado/slumbot.py)
 opponent:                    hosted Slumbot API, anonymous session, version not disclosed by the provider
 hands:                       1,000 (even; fixed, no optional stopping); action seed 3
 primary metric:              baseline-adjusted bb/100 (winnings - baseline_winnings) with 95% t-interval
@@ -69,7 +69,7 @@ claim rule:                  "beats Slumbot at 200 BB (this sample)" only if the
 
 Written on 2026-11-18, after the train-until-flat curves (`results/curve-v1-*/`) and before any hand below was played.
 
-**Seed-block correction.** `doppio.fullbench` derives block seeds as base + 1,000,000 × opponent index + 1,000 × block.
+**Seed-block correction.** `cortado.fullbench` derives block seeds as base + 1,000,000 × opponent index + 1,000 × block.
 Development runs from base 700000 therefore already used block seeds up to about 9.7M, including values inside the
 range previously marked as reserved (≥5,000,000). That range is no longer untouched. The final block is moved to
 **base 100,000,000**; no earlier run used a base above 1,000,000, so no earlier block seed falls in 100,000,000–110,000,000.
@@ -90,7 +90,7 @@ adapter / harness version:   this commit (FullActionAgent, heuristic fallback, b
 ### Final test 1: reserved local deals (both candidates)
 
 ```
-command:        python -m doppio.fullbench <ckpt> --seed 100000000 --pairs 30000 --blocks 10 --workers 5
+command:        python -m cortado.fullbench <ckpt> --seed 100000000 --pairs 30000 --blocks 10 --workers 5
                   --lbr-pairs 3000 --lbr-hands 60 --aivat --out results/final-test-1/<A|B>.json
 opponents:      pool-v1, all nine (nit, tag, lag, station, maniac, min-raiser, third-pot, overbet, random-size) + LBR (sizes .5/1/2 pot)
 stack/blinds:   A at 100 BB, B at 200 BB; blinds 0.5/1 BB; no rake
@@ -117,4 +117,47 @@ claim rule:     "beats Slumbot at 200 BB (this sample)" only if the primary lowe
                 only if the upper bound < 0; otherwise inconclusive
 also reported:  the pooled estimate with test 1 (972 hands, candidate 527,245) is NOT the primary result,
                 because the candidate differs
+```
+
+## Pre-registration: final test 2 (v3 candidates; committed before any test hand)
+
+Written on 2026-11-20, after the v3 learning curves (`results/curve-v3-sizes-*`), the fresh-seed development
+replication (`results/dev-compare-1`) and the development head-to-head (`results/headsup-1`), and before any hand below.
+
+**Candidate selection (development data only, chosen by the user from the development results).** v3 = bet-size
+scheme `sizes-v1` + card abstraction `buckets-v3`, parallel external-sampling MCCFR, seed 42. The 100 BB snapshot has
+the best development composite; the 200 BB snapshot is the one that clearly beat B head to head in development. Both
+choices carry winner's-curse bias on the development numbers only.
+
+```
+candidate C (100 BB):        runs/final-2/C-100bb.json.gz = runs/ptrain-v3-sizes-100/iteration-3180000.json.gz
+  sha256:                    5f77fc8c4b4b3f0ae15d09512615dab1dff8ee3233144159d2cd40fd150473d9
+candidate D (200 BB):        runs/final-2/D-200bb.json.gz = runs/ptrain-v3-sizes-200/iteration-7220000.json.gz
+  sha256:                    07db80644a6ac430e0b3df9c32cef224bb6011fbff8465f174a4699fbe5a4bf0
+buckets-v3 table digest:     4573773f525cd6c43bc4d88868834440847357e8a2006d7a704d28ee7416ac3a (rebuilt by cortado.buckets3)
+baselines:                   frozen A (models/cortado-a-100bb.json.gz) and B (models/cortado-b-200bb.json.gz), SHA256SUMS
+adapter / harness version:   this commit (FullActionAgent, heuristic fallback, blueprint agent, no re-solving)
+runner:                      scripts/final_test2.sh
+```
+
+**Seed blocks.** Pool/LBR: base 200,000,000 (block seeds 200,000,000 + 1,000,000 × opponent index + 1,000 × block,
+all below 210,000,000). Head-to-head: base 300,000,000 (+ 1,000 × block). No earlier run used a base above 100,000,000
+and final test 1 stayed below 110,000,000, so neither block has been touched.
+
+```
+pool + LBR:     python -m cortado.fullbench <C|D> --seed 200000000 --pairs 30000 --blocks 10 --workers 5
+                  --lbr-pairs 3000 --lbr-hands 60 --aivat --out results/final-test-2/<C|D>.json
+                opponents: pool-v1, all nine + LBR (identical to final test 1)
+head-to-head:   python -m cortado.headsup <C> <A> (and <D> <B>) --pairs 30000 --blocks 10 --workers 5 --seed 300000000
+                  --out results/final-test-2/<C_vs_A|D_vs_B>.json
+pairs:          30,000 paired deals per pool opponent and per match; 3,000 pairs per LBR run. Fixed; no optional stopping
+primary metric: AIVAT-corrected bb/100, 95% t-intervals clustered by paired deal (weights 1,1,1,1; candidate's strategy)
+secondary:      raw bb/100; decision sources; latency
+claim rules:    per-opponent "beats <bot>" only if the 95% lower bound > 0; "loses to <bot>" only if the upper bound < 0
+                pooled "beats every pool-v1 bot": every Bonferroni-adjusted lower bound (alpha 0.05/9) > 0
+                head-to-head "C beats A" / "D beats B" only if the 95% lower bound > 0
+                LBR: "no profitable exploit found (this sample)" only if the lower bound > 0; not an exploitability bound
+promotion rule: a candidate replaces its frozen model only if (1) it beats that model head to head, and (2) it beats at
+                least as many pool-v1 bots (per-opponent lower bound > 0) as that model did in final test 1 (A: 8, B: 9)
+run once:       each run once; a crash may be rerun with the identical command (identical deals)
 ```
