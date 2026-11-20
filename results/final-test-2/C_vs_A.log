@@ -1,0 +1,30 @@
+{
+ "first": "runs/final-2/C-100bb.json.gz",
+ "second": "models/cortado-a-100bb.json.gz",
+ "seed": 300000000,
+ "independent_pairs": 30000,
+ "hands": 60000,
+ "mean_bb_per_100": 41.766666666666666,
+ "ci95": [
+  29.243450720999753,
+  54.28988261233358
+ ],
+ "aivat_mean_bb_per_100": 30.143015782165897,
+ "aivat_ci95": [
+  22.70118625025692,
+  37.58484531407487
+ ],
+ "decision_sources": {
+  "first": {
+   "table": 103945,
+   "desync_heuristic": 104
+  },
+  "second": {
+   "table": 108771,
+   "desync_heuristic": 1588
+  }
+ },
+ "wall_seconds": 291.41717292100657,
+ "units": "bb/100 for the first checkpoint",
+ "note": "Development evaluation; not a pre-registered final test."
+}
